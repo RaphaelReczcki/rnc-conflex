@@ -98,6 +98,8 @@ model Usuario {
   senhaHash        String?   @map("senha_hash")
   perfil           Perfil    @default(colaborador)
   setorId          String?   @map("setor_id") @db.Uuid
+  // Equipe a que a pessoa pertence (o líder da equipe vê as RNCs dela)
+  equipeId         String?   @map("equipe_id") @db.Uuid
   ativo            Boolean   @default(true)
   deveTrocarSenha  Boolean   @default(false) @map("deve_trocar_senha")
   ultimoAcessoEm   DateTime? @map("ultimo_acesso_em") @db.Timestamptz(3)
@@ -107,7 +109,10 @@ model Usuario {
   criadoEm         DateTime  @default(now()) @map("criado_em") @db.Timestamptz(3)
   atualizadoEm     DateTime  @updatedAt @map("atualizado_em") @db.Timestamptz(3)
 
-  setor Setor? @relation(fields: [setorId], references: [id], onDelete: Restrict)
+  setor  Setor?  @relation(fields: [setorId], references: [id], onDelete: Restrict)
+  equipe Equipe? @relation("MembroEquipe", fields: [equipeId], references: [id], onDelete: Restrict)
+
+  equipesLideradas Equipe[] @relation("LiderEquipe")
 
   sessoes       Sessao[]
   tokensSenha   TokenSenha[]              @relation("TokenDoUsuario")
@@ -124,8 +129,26 @@ model Usuario {
   anexosRemovidos    Anexo[]         @relation("AnexoRemovidoPor")
 
   @@index([setorId])
+  @@index([equipeId])
   @@index([perfil, ativo])
   @@map("usuarios")
+}
+
+// Equipes de trabalho, cada uma com um líder. O líder vê as RNCs registradas
+// por pessoas da equipe (ou com ação delas), mesmo em outro setor.
+model Equipe {
+  id           String   @id @default(uuid()) @db.Uuid
+  nome         String   @unique @db.VarChar(80)
+  liderId      String   @map("lider_id") @db.Uuid
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  lider   Usuario   @relation("LiderEquipe", fields: [liderId], references: [id], onDelete: Restrict)
+  membros Usuario[] @relation("MembroEquipe")
+
+  @@index([liderId])
+  @@map("equipes")
 }
 
 // Sessões de login. O cookie guarda um token aleatório; aqui fica só o

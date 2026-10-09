@@ -25,6 +25,11 @@ const esquema = z
       .trim()
       .transform((v) => v || null)
       .pipe(z.uuid({ message: "Escolha o setor na lista." }).nullable()),
+    equipeId: z
+      .string()
+      .trim()
+      .transform((v) => v || null)
+      .pipe(z.uuid({ message: "Escolha a equipe na lista." }).nullable()),
   })
   .refine((d) => d.perfil !== "lider_setor" || d.setorId, { message: "Líder de setor precisa de um setor.", path: ["setorId"] })
   .refine((d) => emailPermitido(d.email), { message: "Use o e-mail corporativo da Conflex.", path: ["email"] });
@@ -35,7 +40,14 @@ function lerForm(form: FormData) {
     email: form.get("email") ?? "",
     perfil: form.get("perfil") ?? "",
     setorId: form.get("setorId") ?? "",
+    equipeId: form.get("equipeId") ?? "",
   });
+}
+
+async function equipeInvalida(equipeId: string | null): Promise<ResultadoUsuario | null> {
+  if (!equipeId) return null;
+  const equipe = await prisma.equipe.findUnique({ where: { id: equipeId } });
+  return equipe?.ativo ? null : { erro: "Escolha uma equipe ativa.", campo: "equipeId" };
 }
 
 const erroDe = (e: z.ZodError): ResultadoUsuario => ({ erro: e.issues[0]?.message ?? "Confira os campos.", campo: String(e.issues[0]?.path[0] ?? "") });
@@ -44,6 +56,8 @@ export async function criarUsuario(form: FormData): Promise<ResultadoUsuario> {
   await exigirGestao();
   const dados = lerForm(form);
   if (!dados.success) return erroDe(dados.error);
+  const semEquipe = await equipeInvalida(dados.data.equipeId);
+  if (semEquipe) return semEquipe;
   if (await prisma.usuario.findUnique({ where: { email: dados.data.email } })) {
     return { erro: "Já existe um usuário com este e-mail.", campo: "email" };
   }
@@ -60,6 +74,8 @@ export async function editarUsuario(form: FormData): Promise<ResultadoUsuario> {
   const dados = lerForm(form);
   if (!dados.success) return erroDe(dados.error);
   const ativo = form.get("ativo") === "on";
+  const semEquipe = await equipeInvalida(dados.data.equipeId);
+  if (semEquipe) return semEquipe;
 
   const atual = await prisma.usuario.findUnique({ where: { id } });
   if (!atual) return { erro: "Usuário não encontrado." };

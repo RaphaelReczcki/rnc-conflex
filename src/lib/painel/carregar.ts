@@ -1,13 +1,15 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@/generated/prisma/client";
 import { diaIso } from "@/lib/datas";
 import { inicioDaCarga, type LinhaPainel, type Periodo } from "./indicadores";
 
 // Carrega as RNCs que o período precisa, mais tudo o que ainda está em aberto.
-export async function carregarLinhasPainel(periodo: Periodo, setorId?: string): Promise<LinhaPainel[]> {
+export async function carregarLinhasPainel(periodo: Periodo, setorId?: string, escopo: Prisma.RncWhereInput = {}): Promise<LinhaPainel[]> {
   const brutas = await prisma.rnc.findMany({
     where: {
       ...(setorId ? { setorId } : {}),
+      AND: [escopo],
       OR: [{ criadaEm: { gte: inicioDaCarga(periodo) } }, { status: { not: "encerrada" } }, { encerradaEm: { gte: periodo.inicio } }],
     },
     select: {

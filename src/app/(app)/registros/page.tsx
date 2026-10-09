@@ -6,6 +6,7 @@ import { podeExportar } from "@/lib/auth/permissoes";
 import { formatarData } from "@/lib/formato";
 import { hojeEmBrasilia } from "@/lib/rnc/codigo";
 import { condicaoLista, lerFiltros } from "@/lib/rnc/filtros";
+import { escopoDoUsuario } from "@/lib/rnc/escopo-servidor";
 import { SeloSeveridade, TrilhaCiclo } from "@/components/Rnc";
 import { FiltrosLista } from "./FiltrosLista";
 
@@ -19,7 +20,9 @@ const diaIso = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10)
 export default async function Registros({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const usuario = await exigirUsuario();
   const filtros = lerFiltros(await searchParams);
-  const where = condicaoLista(filtros);
+  // Só as RNCs que esta pessoa pode ver (colaborador: as dele; líder: setor e equipe)
+  const escopo = await escopoDoUsuario(usuario);
+  const where = { AND: [escopo, condicaoLista(filtros)] };
 
   const [setores, rncs, total, existeAlguma] = await Promise.all([
     prisma.setor.findMany({ orderBy: [{ ativo: "desc" }, { ordem: "asc" }], select: { id: true, nome: true } }),
@@ -42,7 +45,7 @@ export default async function Registros({ searchParams }: { searchParams: Promis
       },
     }),
     prisma.rnc.count({ where }),
-    prisma.rnc.count({ take: 1 }),
+    prisma.rnc.count({ where: escopo, take: 1 }),
   ]);
 
   const hoje = hojeEmBrasilia();

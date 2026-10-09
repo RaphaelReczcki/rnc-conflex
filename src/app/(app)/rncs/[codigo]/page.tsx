@@ -17,6 +17,8 @@ import { diaIso, hojeEmBrasilia, somarDias } from "@/lib/datas";
 import { ETAPAS, ORIGENS, PASSOS } from "@/lib/rnc/dominio";
 import { PADRAO_CODIGO } from "@/lib/rnc/codigo";
 import { CAMPOS_ISHIKAWA, CAMPOS_PORQUE, cicloAtual, type CampoIshikawa } from "@/lib/rnc/ciclo";
+import { podeVerRnc } from "@/lib/rnc/escopo";
+import { membrosDasEquipes } from "@/lib/rnc/escopo-servidor";
 import { AtalhoAjuda, SeloSeveridade } from "@/components/Rnc";
 import { FormAcao, FormAnalise, FormImpacto, FormVerificacao } from "./FormsEtapas";
 
@@ -83,6 +85,18 @@ export default async function DetalheRnc({ params, searchParams }: Params) {
     },
   });
   if (!rnc) notFound();
+
+  // Só quem pode ver esta RNC (colaborador: as dele; líder: setor e equipe; gestão: todas)
+  if (!podeVerRnc(usuario, { setorId: rnc.setorId, autorId: rnc.autorId, responsaveis: rnc.acoes.map((a) => a.responsavelId) }, await membrosDasEquipes(usuario))) {
+    return (
+      <>
+        <Link href="/registros" className="back">
+          ← Voltar para registros
+        </Link>
+        <p className="empty">Esta RNC não está entre as que você acompanha. Se precisar dela, fale com o líder do setor ou a gestão da qualidade.</p>
+      </>
+    );
+  }
 
   const pessoas = await prisma.usuario.findMany({
     where: { ativo: true },

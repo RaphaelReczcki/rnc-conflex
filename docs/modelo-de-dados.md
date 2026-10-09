@@ -21,7 +21,15 @@ erDiagram
     usuarios ||--o{ verificacoes : "verifica"
     usuarios |o--o{ historico : "autor do evento"
     usuarios ||--o{ anexos : "envia"
+    usuarios ||--o{ equipes : "lidera"
+    equipes |o--o{ usuarios : "agrupa"
 
+    equipes {
+        uuid id PK
+        varchar nome UK
+        uuid lider_id FK "líder de setor ou gestão"
+        bool ativo
+    }
     usuarios {
         uuid id PK
         varchar nome
@@ -29,6 +37,7 @@ erDiagram
         text senha_hash "Argon2id"
         perfil perfil "colaborador | lider_setor | gestao"
         uuid setor_id FK "obrigatório p/ líder"
+        uuid equipe_id FK "opcional"
         bool ativo
     }
     setores {
