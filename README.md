@@ -123,10 +123,11 @@ O menu **Como preencher** abre um guia para toda a equipe, com os conceitos (RNC
 
 ## Administração (gestão)
 
-O link **Administração** fica na barra do usuário, ao lado de "Alterar senha", e só aparece para a gestão da qualidade. Ela tem três abas, no padrão do e-LALUR:
+O link **Administração** fica na barra do usuário, ao lado de "Alterar senha", e só aparece para a gestão da qualidade. Ela tem quatro abas, no padrão do e-LALUR:
 
 - **Usuários:** em **+ Novo usuário**, o sistema gera uma senha provisória que aparece no quadro "Senhas provisórias para repassar", com Copiar e Copiar todas. A pessoa troca a senha no primeiro acesso. **Redefinir senha** gera outra senha provisória, invalida a anterior e encerra as sessões abertas da pessoa. Ninguém é apagado: quem sai da equipe é desativado e continua no histórico das RNCs.
 - **Importar planilha** (em Usuários): baixe o modelo (.xlsx, com listas de perfil e setor), preencha uma pessoa por linha e envie. Também aceita CSV com as colunas Nome, E-mail, Perfil e Setor. Antes de gravar, o sistema mostra uma prévia linha a linha (novo, atualizar, ignorar ou erro, com o motivo). As linhas com erro ficam de fora, e cada pessoa nova recebe uma senha provisória, que aparece no quadro para repassar. Quem já está cadastrado é ignorado, a menos que você marque "Atualizar nome, perfil e setor". A importação nunca desativa ninguém nem troca senha. Limite: 1 MB e 500 linhas.
+- **Equipes:** cada equipe tem um nome e um líder (Líder de setor ou Gestão). A pessoa entra na equipe em Usuários → Editar → Equipe. Quem vê o quê: o colaborador vê só as RNCs dele (registradas ou com ação dele); o líder de setor vê as do seu setor e as das pessoas da equipe dele, mesmo em outro setor; a gestão vê todas. Detalhes em [docs/perfis-e-permissoes.md](docs/perfis-e-permissoes.md).
 - **Clientes:** cadastro dos clientes citados nas RNCs: nome, CNPJ (com validação, inclusive do CNPJ alfanumérico) e código no sistema contábil. Sem CPF (LGPD). O CNPJ também sai na exportação CSV. **Juntar com outro** corrige cadastros duplicados por erro de digitação: as RNCs passam para o cliente certo, cada uma com um registro no histórico.
 - **E-mails:** acompanhamento dos avisos automáticos e envio de teste.
 

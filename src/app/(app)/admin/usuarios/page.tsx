@@ -16,9 +16,10 @@ async function endereco(): Promise<string> {
 
 export default async function PaginaUsuarios() {
   const gestor = await exigirGestao();
-  const [usuarios, setores] = await Promise.all([
-    prisma.usuario.findMany({ orderBy: [{ ativo: "desc" }, { nome: "asc" }], include: { setor: { select: { nome: true } } } }),
+  const [usuarios, setores, equipes] = await Promise.all([
+    prisma.usuario.findMany({ orderBy: [{ ativo: "desc" }, { nome: "asc" }], include: { setor: { select: { nome: true } }, equipe: { select: { nome: true } } } }),
     prisma.setor.findMany({ where: { ativo: true }, orderBy: { ordem: "asc" }, select: { id: true, nome: true } }),
+    prisma.equipe.findMany({ where: { ativo: true }, orderBy: { nome: "asc" }, select: { id: true, nome: true } }),
   ]);
 
   return (
@@ -26,6 +27,7 @@ export default async function PaginaUsuarios() {
       meuId={gestor.id}
       endereco={await endereco()}
       setores={setores}
+      equipes={equipes}
       lista={usuarios.map((u) => ({
         id: u.id,
         nome: u.nome,
@@ -33,6 +35,8 @@ export default async function PaginaUsuarios() {
         perfil: u.perfil,
         setorId: u.setorId,
         setor: u.setor?.nome ?? null,
+        equipeId: u.equipeId,
+        equipe: u.equipe?.nome ?? null,
         ativo: u.ativo,
         deveTrocarSenha: u.deveTrocarSenha,
         ultimoAcesso: u.ultimoAcessoEm ? formatarDataHora(u.ultimoAcessoEm) : null,

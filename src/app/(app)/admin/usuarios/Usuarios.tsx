@@ -14,6 +14,8 @@ export type UsuarioLinha = {
   perfil: Perfil;
   setorId: string | null;
   setor: string | null;
+  equipeId: string | null;
+  equipe: string | null;
   ativo: boolean;
   deveTrocarSenha: boolean;
   ultimoAcesso: string | null;
@@ -21,7 +23,9 @@ export type UsuarioLinha = {
 
 type Credencial = { nome: string; email: string; senha: string; quando: string };
 
-export function Usuarios({ lista, setores, meuId, endereco }: { lista: UsuarioLinha[]; setores: { id: string; nome: string }[]; meuId: string; endereco: string }) {
+type Opcao = { id: string; nome: string };
+
+export function Usuarios({ lista, setores, equipes, meuId, endereco }: { lista: UsuarioLinha[]; setores: Opcao[]; equipes: Opcao[]; meuId: string; endereco: string }) {
   const [editando, setEditando] = useState<UsuarioLinha | "novo" | null>(null);
   const [senhaDe, setSenhaDe] = useState<UsuarioLinha | null>(null);
   const [importando, setImportando] = useState(false);
@@ -125,7 +129,7 @@ export function Usuarios({ lista, setores, meuId, endereco }: { lista: UsuarioLi
                 <td className="col-opcional">{u.email}</td>
                 <td>
                   {PERFIS[u.perfil]}
-                  {u.setor && <span className="sub">{u.setor}</span>}
+                  {(u.setor || u.equipe) && <span className="sub">{[u.setor, u.equipe && `equipe ${u.equipe}`].filter(Boolean).join(" · ")}</span>}
                 </td>
                 <td>
                   <span className={`pill ${u.ativo ? "ativo" : "off"}`}>{u.ativo ? "Ativo" : "Inativo"}</span>
@@ -151,7 +155,7 @@ export function Usuarios({ lista, setores, meuId, endereco }: { lista: UsuarioLi
       </div>
       <p className="ajuda">
         Colaborador: registra RNCs e trata as que estão sob sua responsabilidade. Líder de setor: trata as RNCs do seu setor e conclui análises e
-        verificações. Gestão da qualidade: tudo, inclusive usuários, exportação e e-mails. Ninguém é apagado: quem sai da equipe é desativado e
+        verificações. Gestão da qualidade: tudo, inclusive usuários, exportação e e-mails. Quem vê o quê: o colaborador vê as RNCs dele; o líder de setor vê as do setor e as da equipe dele; a gestão vê todas. Ninguém é apagado: quem sai da equipe é desativado e
         continua no histórico.
       </p>
 
@@ -159,6 +163,7 @@ export function Usuarios({ lista, setores, meuId, endereco }: { lista: UsuarioLi
         <ModalUsuario
           usuario={editando === "novo" ? null : editando}
           setores={setores}
+          equipes={equipes}
           aoFechar={() => setEditando(null)}
           aoSalvar={(r) => {
             setEditando(null);
@@ -207,11 +212,13 @@ function Modal({ titulo, aoFechar, children }: { titulo: string; aoFechar: () =>
 function ModalUsuario({
   usuario: u,
   setores,
+  equipes,
   aoFechar,
   aoSalvar,
 }: {
   usuario: UsuarioLinha | null;
-  setores: { id: string; nome: string }[];
+  setores: Opcao[];
+  equipes: Opcao[];
   aoFechar: () => void;
   aoSalvar: (r: ResultadoUsuario) => void;
 }) {
@@ -264,6 +271,19 @@ function ModalUsuario({
               ))}
             </select>
           </div>
+        </div>
+        <div className={`field ${marca("equipeId")}`}>
+          <label htmlFor="u-equipe">Equipe</label>
+          <select id="u-equipe" name="equipeId" defaultValue={u?.equipeId ?? ""}>
+            <option value="">Sem equipe</option>
+            {equipes.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.nome}
+              </option>
+            ))}
+            {u?.equipeId && !equipes.some((e) => e.id === u.equipeId) && <option value={u.equipeId}>{u.equipe} (inativa)</option>}
+          </select>
+          <small>O líder da equipe passa a ver as RNCs desta pessoa. As equipes são cadastradas na aba Equipes.</small>
         </div>
         {u ? (
           <label className="check-inline" style={{ marginTop: 12 }}>

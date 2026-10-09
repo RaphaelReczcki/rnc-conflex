@@ -18,9 +18,11 @@ Antes de escrever código, pergunte onde o sistema vai rodar e se já existe alg
 
 ## Perfis de acesso
 
-- **Colaborador:** registra RNCs e trata as que estiverem sob sua responsabilidade.
-- **Líder de setor:** trata qualquer RNC do seu setor e conclui análises e verificações.
-- **Gestão da qualidade / sócios:** acesso total, painel consolidado, exportação, cadastro de setores e categorias.
+- **Colaborador:** registra RNCs e trata as que estiverem sob sua responsabilidade. Vê só as dele (registradas por ele ou com ação dele).
+- **Líder de setor:** trata qualquer RNC do seu setor e conclui análises e verificações. Vê as do seu setor e as das pessoas da equipe que lidera, mesmo em outro setor.
+- **Gestão da qualidade / sócios:** acesso total, painel consolidado, exportação, cadastro de setores, categorias e equipes. Vê todas.
+
+Equipes: cadastradas pela gestão, cada uma com um líder; cada usuário pertence a uma equipe (opcional).
 
 ## Ciclo da RNC
 

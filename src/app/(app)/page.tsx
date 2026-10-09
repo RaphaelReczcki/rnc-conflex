@@ -5,6 +5,7 @@ import { formatarData, formatarMoeda } from "@/lib/formato";
 import { ORDEM_SEVERIDADE, SEVERIDADES } from "@/lib/rnc/dominio";
 import { calcularIndicadores, periodoDe, type ItemAtencao } from "@/lib/painel/indicadores";
 import { carregarLinhasPainel } from "@/lib/painel/carregar";
+import { escopoDoUsuario } from "@/lib/rnc/escopo-servidor";
 import { FiltrosPainel } from "./FiltrosPainel";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -16,7 +17,9 @@ const MOTIVO: Record<ItemAtencao["motivo"], (data: string | null) => string> = {
 };
 
 export default async function Painel({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  await exigirUsuario();
+  const usuario = await exigirUsuario();
+  // Painel com as RNCs que esta pessoa pode ver
+  const escopo = await escopoDoUsuario(usuario);
   const params = await searchParams;
   const agora = new Date();
   const periodo = periodoDe(params.periodo, agora);
@@ -24,7 +27,7 @@ export default async function Painel({ searchParams }: { searchParams: Promise<R
 
   const [setores, existeAlguma] = await Promise.all([
     prisma.setor.findMany({ orderBy: [{ ativo: "desc" }, { ordem: "asc" }], select: { id: true, nome: true, ativo: true } }),
-    prisma.rnc.count({ take: 1 }),
+    prisma.rnc.count({ where: escopo, take: 1 }),
   ]);
 
   if (!existeAlguma) {
@@ -42,7 +45,7 @@ export default async function Painel({ searchParams }: { searchParams: Promise<R
     );
   }
 
-  const linhas = await carregarLinhasPainel(periodo, setorFiltro || undefined);
+  const linhas = await carregarLinhasPainel(periodo, setorFiltro || undefined, escopo);
 
   const setoresGrafico = setores.filter((s) => (setorFiltro ? s.id === setorFiltro : s.ativo || linhas.some((l) => l.setorId === s.id)));
   const I = calcularIndicadores(linhas, { agora, periodo, setores: setoresGrafico });
