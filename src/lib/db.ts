@@ -11,5 +11,18 @@ function criarPrisma(): PrismaClient {
 
 // Uma instância por processo (evita abrir conexões a cada hot reload no dev).
 const global_ = globalThis as unknown as { prisma?: PrismaClient };
-export const prisma = global_.prisma ?? criarPrisma();
-if (process.env.NODE_ENV !== "production") global_.prisma = prisma;
+
+function instancia(): PrismaClient {
+  global_.prisma ??= criarPrisma();
+  return global_.prisma;
+}
+
+// A conexão só é criada no primeiro uso. Assim, carregar o módulo (como o
+// build do Next.js faz para coletar as rotas) não exige DATABASE_URL.
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_alvo, prop) {
+    const cliente = instancia();
+    const valor = Reflect.get(cliente, prop, cliente);
+    return typeof valor === "function" ? valor.bind(cliente) : valor;
+  },
+});
