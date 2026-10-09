@@ -4,6 +4,8 @@ const config: NextConfig = {
   // Módulo nativo: roda direto no Node, sem empacotar
   serverExternalPackages: ["@node-rs/argon2"],
   poweredByHeader: false,
+  // Planilhas de importação (limite de 1 MB no arquivo, mais a folga do formulário)
+  experimental: { serverActions: { bodySizeLimit: "2mb" } },
   // Endereços antigos da gestão
   async redirects() {
     return [

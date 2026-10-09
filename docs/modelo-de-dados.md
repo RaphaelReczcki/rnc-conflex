@@ -51,7 +51,7 @@ erDiagram
     }
     rncs {
         uuid id PK
-        varchar codigo UK "RNC-AAMM-XXXX"
+        varchar codigo UK "RNC-AAAA-NNNN"
         date data_ocorrencia
         uuid setor_id FK
         uuid cliente_id FK
@@ -71,7 +71,7 @@ erDiagram
         timestamptz encerrada_em "só se encerrada"
     }
     rnc_contadores {
-        char ano_mes PK "AAMM"
+        char ano PK "AAAA"
         int ultimo
     }
     analises {
@@ -140,7 +140,7 @@ Quando a verificação é **ineficaz**, a RNC volta para `analise`, `reaberturas
 |---|---|
 | Status, severidade, origem, perfil, método e resultado válidos | ENUMs do PostgreSQL |
 | `encerrada` ⇔ `encerrada_em` preenchida | CHECK `rncs_encerramento_ck` |
-| Código no formato `RNC-AAMM-XXXX` | CHECK `rncs_codigo_formato_ck` |
+| Código no formato `RNC-AAAA-NNNN` | CHECK `rncs_codigo_formato_ck` |
 | Multas, horas e reaberturas não negativas | CHECKs em `rncs` |
 | Análise só conclui com causa raiz | CHECK `analises_conclusao_ck` |
 | Ação só conclui com descrição, responsável e data de verificação | CHECK `acoes_corretivas_conclusao_ck` |

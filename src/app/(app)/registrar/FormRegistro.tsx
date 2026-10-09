@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { ORIGENS, ORDEM_SEVERIDADE, SEVERIDADES } from "@/lib/rnc/dominio";
+import { AtalhoAjuda } from "@/components/Rnc";
 import { registrar, type EstadoRegistro } from "./actions";
 
 type Props = {
@@ -21,7 +22,9 @@ export function FormRegistro({ setores, categorias, clientes, setorPadrao, hoje 
   return (
     // A chave remonta o formulário com os valores devolvidos após um erro
     <form action={acao} className="card" noValidate key={estado.chave}>
-      <h2>Registrar não conformidade</h2>
+      <h2 className="titulo-etapa">
+        Registrar não conformidade <AtalhoAjuda ancora="registro" />
+      </h2>
       <p className="sub">Registre assim que perceber o problema. O objetivo é melhorar o processo, não apontar culpados.</p>
       <div className="fields">
         <div className="field">

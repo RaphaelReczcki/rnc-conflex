@@ -27,15 +27,15 @@ describe("célula do CSV", () => {
   });
   it("não mexe em texto comum nem em sinais no meio", () => {
     expect(celulaCsv("Erro = atraso")).toBe('"Erro = atraso"');
-    expect(celulaCsv("RNC-2610-0001")).toBe('"RNC-2610-0001"');
+    expect(celulaCsv("RNC-2026-0001")).toBe('"RNC-2026-0001"');
   });
 });
 
 describe("arquivo CSV", () => {
   it("começa com BOM UTF-8, separa por ; e usa CRLF", () => {
-    const csv = gerarCsv(["Código", "Severidade"], [["RNC-2610-0001", "Crítica"]]);
+    const csv = gerarCsv(["Código", "Severidade"], [["RNC-2026-0001", "Crítica"]]);
     expect(csv.charCodeAt(0)).toBe(0xfeff);
-    expect(csv.slice(1)).toBe('"Código";"Severidade"\r\n"RNC-2610-0001";"Crítica"\r\n');
+    expect(csv.slice(1)).toBe('"Código";"Severidade"\r\n"RNC-2026-0001";"Crítica"\r\n');
   });
   it("só cabeçalho quando não há linhas", () => {
     expect(gerarCsv(["A"], []).slice(1)).toBe('"A"\r\n');

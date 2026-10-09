@@ -19,7 +19,7 @@ export function Navegacao({ itens }: { itens: Item[] }) {
       ))}
       <span className="menu-espaco" />
       <Link href="/registrar" className="registrar" aria-current={atual("/registrar") ? "page" : undefined}>
-        + Registrar RNC
+        + Registrar<span className="so-desktop"> RNC</span>
       </Link>
     </nav>
   );

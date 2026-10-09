@@ -13,7 +13,7 @@ const PREPARO = `
     VALUES ('00000000-0000-0000-0000-000000000002', 'Pessoa teste', 'teste@conflex.com.br', 'colaborador', now());
   INSERT INTO rncs (id, codigo, data_ocorrencia, setor_id, tipo_problema, tipo_problema_norm, origem, severidade,
                     descricao, autor_id, atualizada_em)
-    VALUES ('00000000-0000-0000-0000-000000000003', 'RNC-9912-9999', current_date,
+    VALUES ('00000000-0000-0000-0000-000000000003', 'RNC-2099-9999', current_date,
             '00000000-0000-0000-0000-000000000001', 'Guia paga em atraso', 'guia paga em atraso',
             'erro_interno', 'alta', 'Teste', '00000000-0000-0000-0000-000000000002', now());
   INSERT INTO historico (rnc_id, tipo, texto, status_novo, ciclo, usuario_id)
@@ -29,7 +29,7 @@ const DEVEM_FALHAR: Caso[] = [
   { nome: "origem inválida", sql: `UPDATE rncs SET origem = 'outro' WHERE id = ${RNC}` },
   { nome: "encerrada sem data de encerramento", sql: `UPDATE rncs SET status = 'encerrada' WHERE id = ${RNC}` },
   { nome: "data de encerramento sem estar encerrada", sql: `UPDATE rncs SET encerrada_em = now() WHERE id = ${RNC}` },
-  { nome: "código fora do formato RNC-AAMM-XXXX", sql: `UPDATE rncs SET codigo = 'RNC-26-1' WHERE id = ${RNC}` },
+  { nome: "código fora do formato RNC-AAAA-NNNN", sql: `UPDATE rncs SET codigo = 'RNC-2610-0001' WHERE id = ${RNC}` },
   { nome: "multas e juros negativos", sql: `UPDATE rncs SET multas_juros = -1 WHERE id = ${RNC}` },
   { nome: "horas de retrabalho negativas", sql: `UPDATE rncs SET horas_retrabalho = -0.5 WHERE id = ${RNC}` },
   { nome: "descrição vazia", sql: `UPDATE rncs SET descricao = '   ' WHERE id = ${RNC}` },

@@ -8,7 +8,7 @@ Sistema de registro e tratamento de não conformidades da Conflex Assessoria Con
 - Como cada indicador do painel é calculado: [docs/indicadores.md](docs/indicadores.md)
 - Perfis e permissões: [docs/perfis-e-permissoes.md](docs/perfis-e-permissoes.md)
 
-**Stack:** Next.js + TypeScript, PostgreSQL (Neon) com Prisma 7, deploy na Vercel. Login com e-mail e senha próprios. E-mails e anexos via Microsoft 365.
+**Stack:** Next.js + TypeScript, PostgreSQL com Prisma 7, deploy no Railway. Login com e-mail e senha próprios. E-mails e anexos via Microsoft 365.
 
 > Em construção. Pronto até agora: **etapa 1** (modelo de dados, migrations e seed), **etapa 2** (login, perfis e cadastro da equipe), **etapa 3** (registro e lista de RNCs) **etapa 4** (ciclo completo: análise, ação, verificação e reabertura), **etapa 5** (painel e indicadores), **etapa 6** (exportação CSV) e **etapa 7** (notificações por e-mail).
 
@@ -91,12 +91,16 @@ Depois siga do passo 3 em diante.
 
 ## Registro e lista
 
-- Cada RNC recebe o código `RNC-AAMM-XXXX`, sequencial dentro do mês (horário de Brasília). Registros simultâneos nunca recebem o mesmo número.
+- Cada RNC recebe o código `RNC-AAAA-NNNN` (ex.: `RNC-2026-0001`): o ano do registro e um número sequencial que recomeça em 1º de janeiro (horário de Brasília). Registros simultâneos nunca recebem o mesmo número.
 - O tipo de problema aceita texto livre com sugestões. Quando coincide com uma categoria (sem diferenciar maiúsculas e acentos), a RNC fica vinculada a ela e usa a grafia oficial.
 - O cliente é escolhido da lista ou digitado. Se ainda não existir no cadastro, é incluído ao registrar.
 - LGPD: o formulário tem um aviso e recusa textos com CPF no formato `000.000.000-00`.
 - Na lista, a busca e os filtros ficam no endereço da página, então dá para guardar ou compartilhar o link de um filtro.
 - **Exportar CSV** (só a gestão): baixa exatamente o que a lista mostra, com os filtros e a busca aplicados. O arquivo abre direto no Excel: separador `;`, acentos corretos (UTF-8 com BOM), datas dd/mm/aaaa e valores com vírgula. Textos que começam com `=`, `+`, `-` ou `@` recebem um apóstrofo na frente, para o Excel não executá-los como fórmula.
+
+## Como preencher (tutorial)
+
+O menu **Como preencher** abre um guia para toda a equipe, com os conceitos (RNC, causa raiz, correção x ação corretiva, eficácia), a explicação de cada campo, a severidade e a origem com exemplos, os métodos 5 Porquês e Ishikawa, um exemplo completo do registro ao encerramento, LGPD, glossário e dúvidas frequentes. Cada etapa da RNC tem um atalho "Como preencher", que abre o trecho certo do guia em outra aba.
 
 ## Ciclo da RNC
 
@@ -115,13 +119,14 @@ Depois siga do passo 3 em diante.
 - Os e-mails passam por uma fila no banco: se o Microsoft 365 falhar, o sistema tenta de novo e nenhum aviso sai duas vezes. A gestão acompanha tudo em **Administração → E-mails**, onde também dá para mandar um teste.
 - **Desenvolvimento:** com `EMAIL_MODO="arquivo"`, os e-mails são gravados na pasta `.emails/` em vez de enviados.
 - **Produção:** siga [docs/microsoft-365-envio.md](docs/microsoft-365-envio.md) para criar a caixa `rnc@conflex.com.br`, registrar o app no Entra ID e limitá-lo a essa caixa.
-- As rotinas rodam pelo Vercel Cron (`vercel.json`), protegidas por `CRON_SECRET`.
+- As rotinas rodam dentro do próprio sistema (agendador interno). As rotas `/api/cron/*` permitem disparo manual, protegidas por `CRON_SECRET`.
 
 ## Administração (gestão)
 
 O link **Administração** fica na barra do usuário, ao lado de "Alterar senha", e só aparece para a gestão da qualidade. Ela tem três abas, no padrão do e-LALUR:
 
 - **Usuários:** em **+ Novo usuário**, o sistema gera uma senha provisória que aparece no quadro "Senhas provisórias para repassar", com Copiar e Copiar todas. A pessoa troca a senha no primeiro acesso. **Redefinir senha** gera outra senha provisória, invalida a anterior e encerra as sessões abertas da pessoa. Ninguém é apagado: quem sai da equipe é desativado e continua no histórico das RNCs.
+- **Importar planilha** (em Usuários): baixe o modelo (.xlsx, com listas de perfil e setor), preencha uma pessoa por linha e envie. Também aceita CSV com as colunas Nome, E-mail, Perfil e Setor. Antes de gravar, o sistema mostra uma prévia linha a linha (novo, atualizar, ignorar ou erro, com o motivo). As linhas com erro ficam de fora, e cada pessoa nova recebe uma senha provisória, que aparece no quadro para repassar. Quem já está cadastrado é ignorado, a menos que você marque "Atualizar nome, perfil e setor". A importação nunca desativa ninguém nem troca senha. Limite: 1 MB e 500 linhas.
 - **Clientes:** cadastro dos clientes citados nas RNCs: nome, CNPJ (com validação, inclusive do CNPJ alfanumérico) e código no sistema contábil. Sem CPF (LGPD). O CNPJ também sai na exportação CSV. **Juntar com outro** corrige cadastros duplicados por erro de digitação: as RNCs passam para o cliente certo, cada uma com um registro no histórico.
 - **E-mails:** acompanhamento dos avisos automáticos e envio de teste.
 
@@ -133,7 +138,7 @@ Após 5 senhas erradas seguidas, o acesso fica pausado por 15 minutos.
 |---|---|
 | `npm run dev:local` | Sobe o PostgreSQL local e o sistema em <http://localhost:3000> |
 | `npm run dev` | Sobe só o sistema (com o banco já no ar ou no Neon) |
-| `npm run build` | Gera a versão de produção (é o que a Vercel roda) |
+| `npm run build` | Gera a versão de produção (é o que o Railway roda) |
 | `npm test` | Roda os testes de unidade (regras do ciclo, indicadores, permissões, validações) |
 | `npm run test:integracao:local` | Roda os testes de integração num PostgreSQL descartável |
 | `npm run test:integracao` | Roda os testes de integração contra o banco de `TEST_DATABASE_URL` |
@@ -149,19 +154,14 @@ Após 5 senhas erradas seguidas, o acesso fica pausado por 15 minutos.
 | `npm run db:check` | Testa as restrições e a proteção do histórico, sem gravar nada |
 | `npm run db:studio` | Abre o Prisma Studio para ver os dados |
 
-## Deploy (Vercel + Neon)
+## Deploy (Railway)
 
-1. Crie no Neon o banco de produção, ou um branch `main` separado do de desenvolvimento.
-2. Na Vercel, importe o repositório e cadastre as variáveis de ambiente de produção: `DATABASE_URL` (pooled), `DIRECT_URL` (direta), `EMAIL_DOMINIOS_PERMITIDOS`, `SESSAO_HORAS`, `APP_URL`, `CRON_SECRET` e as do e-mail (`EMAIL_MODO=graph`, `EMAIL_REMETENTE`, `M365_TENANT_ID`, `M365_CLIENT_ID`, `M365_CLIENT_SECRET`). O `APP_URL` precisa ser o endereço oficial do sistema, para que os links de convite não dependam do endereço informado pelo navegador.
-3. Aplique as migrations em produção antes de cada deploy que as altere:
+O sistema roda no Railway (aplicação + PostgreSQL), com o código num GitHub privado e deploy automático a cada `git push`. O passo a passo completo está em [docs/deploy-railway.md](docs/deploy-railway.md): repositório, projeto, variáveis, migração da equipe e domínio `rnc.conflex.com.br`.
 
-   ```bash
-   npm run db:deploy
-   ```
-
-4. Rode o seed uma vez, com um `SEED_GESTAO_SENHA` forte, e troque a senha no primeiro acesso.
-
-**Backups:** o Neon guarda o histórico do banco e permite restaurar um ponto no tempo; o período depende do plano. Para a LGPD, recomenda-se também um `pg_dump` periódico guardado no SharePoint da Conflex. O passo a passo entra junto com o deploy.
+- `npm start` aplica as migrations e sobe o sistema.
+- As rotinas de e-mail rodam dentro do próprio sistema (`src/instrumentation.ts`); `AGENDADOR=desligado` as desliga.
+- `/api/saude` mostra se o sistema e o banco estão no ar.
+- `node scripts/migrar-para-nuvem.mjs` leva a equipe e os cadastros do banco local para a nuvem.
 
 ## Segurança
 

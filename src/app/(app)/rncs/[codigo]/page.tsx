@@ -17,7 +17,7 @@ import { diaIso, hojeEmBrasilia, somarDias } from "@/lib/datas";
 import { ETAPAS, ORIGENS, PASSOS } from "@/lib/rnc/dominio";
 import { PADRAO_CODIGO } from "@/lib/rnc/codigo";
 import { CAMPOS_ISHIKAWA, CAMPOS_PORQUE, cicloAtual, type CampoIshikawa } from "@/lib/rnc/ciclo";
-import { SeloSeveridade } from "@/components/Rnc";
+import { AtalhoAjuda, SeloSeveridade } from "@/components/Rnc";
 import { FormAcao, FormAnalise, FormImpacto, FormVerificacao } from "./FormsEtapas";
 
 type Params = { params: Promise<{ codigo: string }>; searchParams: Promise<Record<string, string | undefined>> };
@@ -165,7 +165,9 @@ export default async function DetalheRnc({ params, searchParams }: Params) {
 
       {/* Análise de causa */}
       <section className={`card stage ${classe(1)}`}>
-        <h3>Análise de causa raiz</h3>
+        <h3 className="titulo-etapa">
+          Análise de causa raiz <AtalhoAjuda ancora="analise" />
+        </h3>
         {classe(1) === "done" && analise ? (
           <>
             <p className="sub">
@@ -199,7 +201,9 @@ export default async function DetalheRnc({ params, searchParams }: Params) {
 
       {/* Ação corretiva */}
       <section className={`card stage ${classe(2)}`}>
-        <h3>Ação corretiva</h3>
+        <h3 className="titulo-etapa">
+          Ação corretiva <AtalhoAjuda ancora="acao" />
+        </h3>
         {classe(2) === "locked" ? (
           <p className="sub" style={{ marginBottom: 0 }}>
             Liberada depois da análise de causa.
@@ -250,7 +254,9 @@ export default async function DetalheRnc({ params, searchParams }: Params) {
 
       {/* Verificação de eficácia */}
       <section className={`card stage ${classe(3)}`}>
-        <h3>Verificação de eficácia</h3>
+        <h3 className="titulo-etapa">
+          Verificação de eficácia <AtalhoAjuda ancora="verificacao" />
+        </h3>
         {classe(3) === "locked" ? (
           <p className="sub" style={{ marginBottom: 0 }}>
             Liberada depois que a ação corretiva for concluída.

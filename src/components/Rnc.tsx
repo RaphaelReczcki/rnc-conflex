@@ -1,5 +1,15 @@
 // Pequenos elementos visuais da RNC, iguais aos do protótipo.
+import Link from "next/link";
 import { ETAPAS, SEVERIDADES, type Severidade, type Status } from "@/lib/rnc/dominio";
+
+// Atalho para o trecho do tutorial "Como preencher" (abre em outra aba para não perder o que foi digitado)
+export function AtalhoAjuda({ ancora, texto = "Como preencher" }: { ancora: string; texto?: string }) {
+  return (
+    <Link href={`/ajuda#${ancora}`} className="atalho-ajuda" target="_blank" rel="noopener">
+      {texto}
+    </Link>
+  );
+}
 
 export function SeloSeveridade({ severidade }: { severidade: Severidade }) {
   return <span className={`sev ${severidade}`}>{SEVERIDADES[severidade].rotulo}</span>;

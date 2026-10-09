@@ -87,7 +87,7 @@ describe("verificação liberada", () => {
 });
 
 describe("modelos de e-mail", () => {
-  const rnc = { codigo: "RNC-2610-0001", setor: "Fiscal", tipoProblema: "Guia paga em atraso", link: "https://rnc.conflex.com.br/rncs/RNC-2610-0001" };
+  const rnc = { codigo: "RNC-2026-0001", setor: "Fiscal", tipoProblema: "Guia paga em atraso", link: "https://rnc.conflex.com.br/rncs/RNC-2026-0001" };
   it("escapa HTML de tudo o que foi digitado", () => {
     expect(esc(`<script>alert("x")</script> & 'y'`)).toBe("&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; &#39;y&#39;");
     const e = emailAcaoAtribuida({ ...rnc, tipoProblema: "<img src=x onerror=alert(1)>", para: "Ana Souza", quem: "Bruno", acao: "<b>negrito</b>", prazo: "2026-10-20" });
@@ -97,7 +97,7 @@ describe("modelos de e-mail", () => {
   });
   it("ação atribuída: assunto, saudação pelo primeiro nome, prazo em dd/mm/aaaa e link", () => {
     const e = emailAcaoAtribuida({ ...rnc, para: "Ana Souza", quem: "Bruno Lima", acao: "Revisar o checklist", prazo: "2026-10-20" });
-    expect(e.assunto).toBe("RNC-2610-0001: você é responsável por uma ação corretiva");
+    expect(e.assunto).toBe("RNC-2026-0001: você é responsável por uma ação corretiva");
     expect(e.texto).toContain("Olá, Ana. Bruno Lima indicou você");
     expect(e.texto).toContain("Prazo: 20/10/2026");
     expect(e.texto).toContain(rnc.link);
@@ -107,8 +107,8 @@ describe("modelos de e-mail", () => {
     expect(emailAcaoAtribuida({ ...rnc, para: "Ana", quem: "Bruno", acao: null, prazo: null }).texto).toContain("Prazo: Sem prazo definido");
   });
   it("lembretes: hoje e em 3 dias", () => {
-    expect(emailLembretePrazo({ ...rnc, para: "Ana", acao: "x", prazo: "2026-10-08", emDias: 0 }).assunto).toBe("RNC-2610-0001: o prazo da ação é hoje");
-    expect(emailLembretePrazo({ ...rnc, para: "Ana", acao: "x", prazo: "2026-10-11", emDias: 3 }).assunto).toBe("RNC-2610-0001: o prazo da ação é em 3 dias (11/10/2026)");
+    expect(emailLembretePrazo({ ...rnc, para: "Ana", acao: "x", prazo: "2026-10-08", emDias: 0 }).assunto).toBe("RNC-2026-0001: o prazo da ação é hoje");
+    expect(emailLembretePrazo({ ...rnc, para: "Ana", acao: "x", prazo: "2026-10-11", emDias: 3 }).assunto).toBe("RNC-2026-0001: o prazo da ação é em 3 dias (11/10/2026)");
   });
   it("tom não punitivo: sem palavras de cobrança", () => {
     const textos = [

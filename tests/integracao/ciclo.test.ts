@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { ErroCiclo } from "@/lib/rnc/ciclo";
 import { atualizarImpacto, registrarVerificacao, salvarAcao, salvarAnalise, type Ator } from "@/lib/rnc/ciclo-servico";
 import { registrarRnc } from "@/lib/rnc/registro";
+import { anoAtual } from "@/lib/rnc/codigo";
 
 const sufixo = randomUUID().slice(0, 8);
 let setorA: string;
@@ -62,6 +63,8 @@ beforeAll(async () => {
 describe("caminho completo", () => {
   it("análise → ação → verificação eficaz → encerrada, com histórico de cada passo", async () => {
     const codigo = await novaRnc();
+    // Código começa pelo ano do registro: RNC-AAAA-NNNN
+    expect(codigo).toMatch(new RegExp(`^RNC-${anoAtual()}-[0-9]{4}$`));
     expect((await estado(codigo)).status).toBe("analise");
 
     await salvarAnalise(liderA, codigo, analiseOk, true);

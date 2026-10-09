@@ -7,6 +7,9 @@ import { encerrarSessoesDoUsuario, exigirGestao } from "@/lib/auth/sessao";
 import { gerarHashSenha } from "@/lib/auth/senha";
 import { gerarSenhaProvisoria } from "@/lib/auth/senha-provisoria";
 import { emailPermitido } from "@/lib/auth/tokens";
+import { ErroPlanilha, lerPlanilha } from "@/lib/importacao/planilha";
+import type { LinhaAnalisada } from "@/lib/importacao/usuarios";
+import { analisarPlanilhaUsuarios, importarUsuarios, resumir, type ResumoImportacao } from "@/lib/importacao/importar-usuarios";
 
 // Resultado de criar ou redefinir: a senha provisória volta uma única vez,
 // para a gestão repassar. No banco fica só o hash.
@@ -94,4 +97,45 @@ export async function redefinirSenha(form: FormData): Promise<ResultadoUsuario> 
   await encerrarSessoesDoUsuario(id);
   revalidatePath("/admin/usuarios");
   return { ok: `Senha de ${u.nome} redefinida. A nova senha provisória está no quadro abaixo.`, credencial: { nome: u.nome, email: u.email, senha } };
+}
+
+// ---------- Importação por planilha ----------
+
+export type ResultadoImportacao = {
+  erro?: string;
+  linhas?: LinhaAnalisada[];
+  resumo?: ResumoImportacao;
+  credenciais?: { nome: string; email: string; senha: string }[];
+  importado?: boolean;
+};
+
+async function lerArquivo(form: FormData): Promise<string[][] | { erro: string }> {
+  const arquivo = form.get("arquivo");
+  if (!(arquivo instanceof File)) return { erro: "Escolha um arquivo." };
+  try {
+    return await lerPlanilha(arquivo);
+  } catch (e) {
+    if (e instanceof ErroPlanilha) return { erro: e.message };
+    throw e;
+  }
+}
+
+// Prévia: valida a planilha e mostra o que vai acontecer, sem gravar nada.
+export async function analisarImportacao(form: FormData): Promise<ResultadoImportacao> {
+  const gestor = await exigirGestao();
+  const linhas = await lerArquivo(form);
+  if ("erro" in linhas) return linhas;
+  const r = await analisarPlanilhaUsuarios(linhas, gestor.email, form.get("atualizar") === "on");
+  if (r.erroGeral) return { erro: r.erroGeral };
+  return { linhas: r.linhas, resumo: resumir(r.linhas) };
+}
+
+export async function executarImportacao(form: FormData): Promise<ResultadoImportacao> {
+  const gestor = await exigirGestao();
+  const linhas = await lerArquivo(form);
+  if ("erro" in linhas) return linhas;
+  const r = await importarUsuarios(linhas, gestor.email, form.get("atualizar") === "on");
+  if (r.erroGeral) return { erro: r.erroGeral };
+  revalidatePath("/admin/usuarios");
+  return { linhas: r.linhas, resumo: r.resumo, credenciais: r.credenciais, importado: true };
 }

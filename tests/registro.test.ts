@@ -1,24 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { anoMes, formatarCodigo, hojeEmBrasilia, PADRAO_CODIGO } from "@/lib/rnc/codigo";
+import { anoAtual, formatarCodigo, hojeEmBrasilia, PADRAO_CODIGO } from "@/lib/rnc/codigo";
 import { contemCpf, esquemaRegistro, lerDecimal } from "@/lib/rnc/validacao";
 import { condicaoLista, lerFiltros } from "@/lib/rnc/filtros";
 
-describe("código RNC-AAMM-XXXX", () => {
+describe("código RNC-AAAA-NNNN", () => {
   it("formata com quatro dígitos", () => {
-    expect(formatarCodigo("2610", 1)).toBe("RNC-2610-0001");
-    expect(formatarCodigo("2612", 9999)).toBe("RNC-2612-9999");
-    expect(PADRAO_CODIGO.test(formatarCodigo("2610", 42))).toBe(true);
+    expect(formatarCodigo("2026", 1)).toBe("RNC-2026-0001");
+    expect(formatarCodigo("2027", 9999)).toBe("RNC-2027-9999");
+    expect(PADRAO_CODIGO.test(formatarCodigo("2026", 42))).toBe(true);
+    expect(PADRAO_CODIGO.test("RNC-2610-0001")).toBe(false); // formato antigo (ano+mês) não passa
   });
   it("recusa número fora da faixa e mês inválido", () => {
-    expect(() => formatarCodigo("2610", 0)).toThrow();
-    expect(() => formatarCodigo("2610", 10000)).toThrow(/9.999/);
+    expect(() => formatarCodigo("2026", 0)).toThrow();
+    expect(() => formatarCodigo("2026", 10000)).toThrow(/9.999/);
+    expect(() => formatarCodigo("26", 1)).toThrow();
     expect(() => formatarCodigo("2613", 1)).toThrow();
   });
-  it("usa o mês de Brasília, não o UTC", () => {
-    // 01/11/2026 01:00 UTC ainda é 31/10/2026 em Brasília
-    const virada = new Date("2026-11-01T01:00:00Z");
-    expect(hojeEmBrasilia(virada)).toBe("2026-10-31");
-    expect(anoMes(virada)).toBe("2610");
+  it("usa o ano de Brasília, não o UTC: a virada do ano é à meia-noite de Brasília", () => {
+    // 01/01/2027 01:00 UTC ainda é 31/12/2026 em Brasília
+    const virada = new Date("2027-01-01T01:00:00Z");
+    expect(hojeEmBrasilia(virada)).toBe("2026-12-31");
+    expect(anoAtual(virada)).toBe("2026");
+    expect(anoAtual(new Date("2027-01-01T03:00:00Z"))).toBe("2027");
   });
 });
 

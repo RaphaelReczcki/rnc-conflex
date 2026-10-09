@@ -15,7 +15,7 @@ function rnc(p: Partial<Omit<LinhaPainel, "criadaEm">> & { criadaEm: string }): 
   n++;
   const { criadaEm, ...resto } = p;
   return {
-    codigo: `RNC-2610-${String(n).padStart(4, "0")}`,
+    codigo: `RNC-2026-${String(n).padStart(4, "0")}`,
     setorId: FISCAL,
     tipoProblema: "Guia paga em atraso",
     tipoProblemaNorm: "guia paga em atraso",

@@ -226,7 +226,7 @@ model Cliente {
 
 model Rnc {
   id               String     @id @default(uuid()) @db.Uuid
-  // RNC-AAMM-XXXX, sequencial dentro do mês (ver rnc_contadores)
+  // RNC-AAAA-NNNN, sequencial dentro do ano (ver rnc_contadores)
   codigo           String     @unique @db.VarChar(13)
   dataOcorrencia   DateTime   @map("data_ocorrencia") @db.Date
   setorId          String     @map("setor_id") @db.Uuid
@@ -275,10 +275,10 @@ model Rnc {
   @@map("rncs")
 }
 
-// Último número usado por mês, para gerar o código sem colisão
+// Último número usado no ano, para gerar o código sem colisão
 // (UPDATE ... RETURNING dentro da transação do registro).
 model RncContador {
-  anoMes String @id @map("ano_mes") @db.Char(4)
+  ano    String @id @db.Char(4)
   ultimo Int    @default(0)
 
   @@map("rnc_contadores")

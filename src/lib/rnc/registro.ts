@@ -1,25 +1,25 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { normalizar } from "@/lib/normalizar";
-import { anoMes, formatarCodigo } from "./codigo";
+import { anoAtual, formatarCodigo } from "./codigo";
 import type { DadosRegistro } from "./validacao";
 
 export type ResultadoRegistro = { codigo: string; clienteNovo: string | null };
 
-// Grava a RNC numa transação: número do mês, cliente, categoria, RNC e histórico.
+// Grava a RNC numa transação: número do ano, cliente, categoria, RNC e histórico.
 export async function registrarRnc(dados: DadosRegistro, autorId: string): Promise<ResultadoRegistro> {
   return prisma.$transaction(async (tx) => {
     const setor = await tx.setor.findFirst({ where: { id: dados.setorId, ativo: true } });
     if (!setor) throw new ErroRegistro("Escolha um setor da lista.");
 
-    // Número sequencial do mês. O UPSERT trava a linha do mês até o fim da
+    // Número sequencial do ano. O UPSERT trava a linha do ano até o fim da
     // transação, então dois registros simultâneos nunca pegam o mesmo número.
-    const am = anoMes();
+    const ano = anoAtual();
     const [{ ultimo }] = await tx.$queryRaw<{ ultimo: number }[]>`
-      INSERT INTO rnc_contadores (ano_mes, ultimo) VALUES (${am}, 1)
-      ON CONFLICT (ano_mes) DO UPDATE SET ultimo = rnc_contadores.ultimo + 1
+      INSERT INTO rnc_contadores (ano, ultimo) VALUES (${ano}, 1)
+      ON CONFLICT (ano) DO UPDATE SET ultimo = rnc_contadores.ultimo + 1
       RETURNING ultimo`;
-    const codigo = formatarCodigo(am, ultimo);
+    const codigo = formatarCodigo(ano, ultimo);
 
     // Cliente: reaproveita o cadastro pelo nome normalizado ou cadastra um novo
     let clienteId: string | null = null;

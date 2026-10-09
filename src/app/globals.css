@@ -394,6 +394,38 @@ a.station{color:inherit;text-decoration:none;display:block}
 .modal h2{margin:0 0 14px;font-size:1.15rem}
 .modal .field{margin-bottom:12px}
 .modal .fields .field{margin-bottom:0}
+.modal-largo{max-width:860px}
+.passos{margin:0 0 12px;padding-left:20px;display:flex;flex-direction:column;gap:10px}
+.resumo-importacao{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.tabela-rolagem{max-height:45vh;overflow-y:auto}
+.tabela-rolagem thead th{position:sticky;top:0;z-index:1}
+.pill.atencao{background:var(--media-soft);color:var(--media)}
+.pill.erro{background:var(--crit-soft);color:var(--crit)}
+.texto-erro{color:var(--crit)!important}
+
+/* Tutorial "Como preencher" */
+.ajuda-pagina{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:start}
+.ajuda-sumario{position:sticky;top:120px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:var(--sombra);display:flex;flex-direction:column}
+.ajuda-sumario strong{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.ajuda-sumario nav{display:flex;flex-direction:column}
+.ajuda-sumario nav a{padding:5px 0;text-decoration:none;color:var(--ink);font-size:14px;border-left:2px solid transparent;padding-left:8px}
+.ajuda-sumario nav a:hover{color:var(--brand);border-left-color:var(--marca-clara)}
+.ajuda-conteudo section{scroll-margin-top:120px}
+.ajuda-conteudo h2{font-size:1.2rem;margin:0 0 10px}
+.ajuda-conteudo h3{font-size:1rem;margin:18px 0 6px}
+.ajuda-conteudo p,.ajuda-conteudo li{line-height:1.6}
+.ajuda-conteudo ul,.ajuda-conteudo ol{padding-left:20px}
+.ajuda-conteudo .tabela{margin:8px 0}
+.dica{background:var(--brand-soft);border-left:4px solid var(--marca-clara);padding:10px 14px;border-radius:6px;margin:12px 0;font-size:14px}
+.campos-ajuda dt{font-weight:600;margin-top:12px;color:var(--brand)}
+.campos-ajuda dt:first-child{margin-top:0}
+.campos-ajuda dd{margin:4px 0 0}
+.ciclo-ajuda li{margin-bottom:6px}
+.porques-ajuda li{margin-bottom:4px}
+.titulo-etapa{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.atalho-ajuda{font-size:13px;font-weight:600;color:var(--brand);text-decoration:none;border-bottom:1px dotted var(--marca-clara)}
+.atalho-ajuda:hover{border-bottom-style:solid}
+@media (max-width:900px){.ajuda-pagina{grid-template-columns:1fr}.ajuda-sumario{position:static}}
 
 /* Cabeçalho e login em telas menores (no fim, para valer sobre as regras acima) */
 @media (max-width:1000px){
@@ -411,5 +443,8 @@ a.station{color:inherit;text-decoration:none;display:block}
   .usuario{gap:10px}
   .usuario-nome .nome-completo{display:none}
   .menu-modulos{padding:0 6px}
+  .menu-modulos a.modulo{padding:9px 8px}
+  .menu-modulos .registrar{padding:4px 10px}
+  .so-desktop{display:none}
   .login{padding:24px}
 }

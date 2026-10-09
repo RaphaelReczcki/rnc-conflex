@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { criarUsuario, editarUsuario, redefinirSenha, type ResultadoUsuario } from "./actions";
+import { ImportarUsuarios } from "./ImportarUsuarios";
 
 type Perfil = "colaborador" | "lider_setor" | "gestao";
 const PERFIS: Record<Perfil, string> = { colaborador: "Colaborador", lider_setor: "Líder de setor", gestao: "Gestão da qualidade" };
@@ -23,17 +24,20 @@ type Credencial = { nome: string; email: string; senha: string; quando: string }
 export function Usuarios({ lista, setores, meuId, endereco }: { lista: UsuarioLinha[]; setores: { id: string; nome: string }[]; meuId: string; endereco: string }) {
   const [editando, setEditando] = useState<UsuarioLinha | "novo" | null>(null);
   const [senhaDe, setSenhaDe] = useState<UsuarioLinha | null>(null);
+  const [importando, setImportando] = useState(false);
   const [aviso, setAviso] = useState("");
   // Senhas geradas nesta tela: ficam visíveis até a gestão fechar o quadro.
   // Só vale a mais recente de cada pessoa.
   const [credenciais, setCredenciais] = useState<Credencial[]>([]);
 
+  function guardarCredenciais(novas: { nome: string; email: string; senha: string }[]) {
+    const quando = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    const emails = new Set(novas.map((n) => n.email));
+    setCredenciais((l) => [...novas.map((n) => ({ ...n, quando })), ...l.filter((x) => !emails.has(x.email))]);
+  }
   function registrar(r: ResultadoUsuario) {
     if (r.ok) setAviso(r.ok);
-    if (r.credencial) {
-      const c = { ...r.credencial, quando: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) };
-      setCredenciais((l) => [c, ...l.filter((x) => x.email !== c.email)]);
-    }
+    if (r.credencial) guardarCredenciais([r.credencial]);
   }
   const texto = (c: Credencial) => `Acesso ao sistema de não conformidades: ${endereco} | e-mail: ${c.email} | senha provisória: ${c.senha} (troque no primeiro acesso)`;
   const copiar = (t: string) => navigator.clipboard?.writeText(t).catch(() => {});
@@ -42,9 +46,14 @@ export function Usuarios({ lista, setores, meuId, endereco }: { lista: UsuarioLi
     <>
       <div className="titulo-pagina">
         <p className="suave">Cada pessoa tem o próprio acesso: o histórico das RNCs registra quem fez cada passo.</p>
-        <button type="button" className="btn primary" onClick={() => setEditando("novo")}>
-          + Novo usuário
-        </button>
+        <div className="linha-acoes">
+          <button type="button" className="btn" onClick={() => setImportando(true)}>
+            Importar planilha
+          </button>
+          <button type="button" className="btn primary" onClick={() => setEditando("novo")}>
+            + Novo usuário
+          </button>
+        </div>
       </div>
       {aviso && (
         <p className="notice ok" role="status">
@@ -154,6 +163,19 @@ export function Usuarios({ lista, setores, meuId, endereco }: { lista: UsuarioLi
           aoSalvar={(r) => {
             setEditando(null);
             registrar(r);
+          }}
+        />
+      )}
+      {importando && (
+        <ImportarUsuarios
+          aoFechar={() => setImportando(false)}
+          aoImportar={(r) => {
+            setImportando(false);
+            const s = r.resumo!;
+            setAviso(
+              `Importação concluída: ${s.criadas} ${s.criadas === 1 ? "pessoa nova" : "pessoas novas"}, ${s.atualizadas} ${s.atualizadas === 1 ? "atualizada" : "atualizadas"}, ${s.ignoradas} ${s.ignoradas === 1 ? "ignorada" : "ignoradas"}${s.comErro ? `, ${s.comErro} com erro (não importadas)` : ""}.${s.criadas ? " As senhas provisórias estão no quadro abaixo." : ""}`,
+            );
+            guardarCredenciais(r.credenciais ?? []);
           }}
         />
       )}

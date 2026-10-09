@@ -12,6 +12,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   const itens = [
     { href: "/", rotulo: "Painel" },
     { href: "/registros", rotulo: "Registros" },
+    { href: "/ajuda", rotulo: "Como preencher" },
   ];
 
   return (

@@ -4,12 +4,12 @@
   "private": true,
   "description": "Sistema de Não Conformidades (RNC) da Conflex Assessoria Contábil",
   "engines": {
-    "node": ">=20.19"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "prisma migrate deploy && next start",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -30,8 +30,10 @@
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "dotenv": "18.0.5",
+    "exceljs": "4.4.0",
     "next": "16.3.8",
     "pg": "8.23.1",
+    "prisma": "7.10.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "0.0.1",
@@ -43,7 +45,6 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "embedded-postgres": "18.4.0-beta.17",
-    "prisma": "7.10.0",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
     "vitest": "5.0.3"

@@ -21,7 +21,7 @@ Opcional: dê acesso de leitura à gestão da qualidade, para ver os itens envia
    - **ID do aplicativo (cliente)** → vai em `M365_CLIENT_ID`
    - **ID do diretório (locatário)** → vai em `M365_TENANT_ID`
 4. **Certificados e segredos → Novo segredo do cliente**. Descrição `RNC produção`, validade de 24 meses. Copie o **Valor** na hora (ele não aparece de novo) → vai em `M365_CLIENT_SECRET`.
-5. Anote a data de vencimento do segredo na agenda. Antes dela, gere um novo e troque na Vercel.
+5. Anote a data de vencimento do segredo na agenda. Antes dela, gere um novo e troque no Railway.
 
 **Não** adicione a permissão `Mail.Send` em "Permissões de API". Ela daria ao app o poder de enviar como qualquer caixa da empresa. A permissão vai ser dada no passo 3, limitada à caixa do RNC.
 
@@ -56,7 +56,7 @@ A permissão pode levar de 30 minutos a 2 horas para valer.
 
 ## 4. Configurar o sistema
 
-No `.env` (desenvolvimento) ou em **Vercel → Settings → Environment Variables** (produção):
+No `.env` (desenvolvimento) ou em **Railway → serviço da aplicação → Variables** (produção):
 
 | Variável | Valor |
 |---|---|
@@ -94,6 +94,6 @@ O segredo do cliente e o `CRON_SECRET` nunca vão para o código nem para o Git.
 | Verificação liberada | Líderes do setor (sem líder: a gestão) | Rotina diária, 7h, quando chega a data prevista |
 | Resumo semanal | Gestão da qualidade | Segunda-feira, 8h |
 
-As rotinas rodam pelo **Vercel Cron** (`vercel.json`), que chama `/api/cron/diario` e `/api/cron/resumo` com o `CRON_SECRET`. Os horários no arquivo estão em UTC: 10h e 11h UTC equivalem a 7h e 8h em Brasília.
+As rotinas rodam dentro do próprio sistema (agendador interno), no horário de Brasília. As rotas `/api/cron/diario` e `/api/cron/resumo` continuam disponíveis para disparo manual, com o `CRON_SECRET`.
 
 Se o Microsoft 365 estiver fora do ar, o e-mail fica na fila e o sistema tenta de novo: 5 minutos depois, 10, 20, e assim por diante, até 6 tentativas. Nenhum aviso sai duas vezes.

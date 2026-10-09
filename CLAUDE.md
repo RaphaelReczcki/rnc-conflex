@@ -12,7 +12,7 @@ Existe um protótipo funcional em `rnc-conflex.html` (HTML único, sem backend).
 - PostgreSQL (Supabase ou Postgres próprio) com Prisma ou Drizzle
 - Autenticação por e-mail corporativo (@conflex.com.br)
 - Envio de e-mail para lembretes de prazo
-- Deploy em Vercel ou em servidor interno, a definir
+- Deploy no Railway (aplicação + PostgreSQL), código em GitHub privado (definido em 09/10/2026; veja docs/deploy-railway.md)
 
 Antes de escrever código, pergunte onde o sistema vai rodar e se já existe alguma infraestrutura (servidor, banco, Microsoft 365 para login).
 
@@ -37,7 +37,7 @@ Toda transição grava uma entrada de histórico (texto, data, usuário). O hist
 
 ## Campos do registro
 
-- Código legível: `RNC-AAMM-XXXX`
+- Código legível: `RNC-AAAA-NNNN` (ex.: `RNC-2026-0001`), começando pelo ano; numeração sequencial anual, recomeça em 1º de janeiro
 - Data da ocorrência
 - Setor: Fiscal, Contábil, Pessoal/Folha, Societário/Legalização, Atendimento, Financeiro interno. Deve ser editável pela gestão.
 - Cliente afetado (opcional; idealmente vinculado a um cadastro de clientes)

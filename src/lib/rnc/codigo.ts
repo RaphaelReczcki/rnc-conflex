@@ -1,4 +1,5 @@
-// Código legível RNC-AAMM-XXXX. O mês é o do registro, no horário de Brasília.
+// Código legível RNC-AAAA-NNNN: ano do registro (horário de Brasília) e
+// número sequencial dentro do ano, que recomeça em 1º de janeiro.
 
 const partes = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/Sao_Paulo",
@@ -12,17 +13,17 @@ export function hojeEmBrasilia(agora = new Date()): string {
   return partes.format(agora);
 }
 
-export function anoMes(agora = new Date()): string {
-  const [ano, mes] = hojeEmBrasilia(agora).split("-");
-  return ano.slice(2) + mes;
+export function anoAtual(agora = new Date()): string {
+  return hojeEmBrasilia(agora).slice(0, 4);
 }
 
-export function formatarCodigo(anoMesAtual: string, numero: number): string {
-  if (!/^\d{2}(0[1-9]|1[0-2])$/.test(anoMesAtual)) throw new Error(`Ano/mês inválido: ${anoMesAtual}`);
+export function formatarCodigo(ano: string, numero: number): string {
+  if (!/^20\d{2}$/.test(ano)) throw new Error(`Ano inválido: ${ano}`);
   if (!Number.isInteger(numero) || numero < 1 || numero > 9999) {
-    throw new Error("Limite de 9.999 RNCs no mês atingido.");
+    throw new Error("Limite de 9.999 RNCs no ano atingido.");
   }
-  return `RNC-${anoMesAtual}-${String(numero).padStart(4, "0")}`;
+  return `RNC-${ano}-${String(numero).padStart(4, "0")}`;
 }
 
-export const PADRAO_CODIGO = /^RNC-\d{2}(0[1-9]|1[0-2])-\d{4}$/;
+// Anos 2000 a 2099: impede confundir com o formato antigo RNC-AAMM-XXXX
+export const PADRAO_CODIGO = /^RNC-20\d{2}-\d{4}$/;
