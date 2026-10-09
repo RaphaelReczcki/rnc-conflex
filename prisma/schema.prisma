@@ -1,0 +1,476 @@
+// Modelo de dados do sistema de RNC da Conflex.
+// Regras que o Prisma não expressa (CHECKs e a proteção do histórico)
+// ficam no SQL da migration inicial, em prisma/migrations.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Enums: o banco recusa qualquer valor fora destas listas ----------
+
+enum Perfil {
+  colaborador
+  lider_setor
+  gestao
+
+  @@map("perfil")
+}
+
+enum StatusRnc {
+  analise
+  acao
+  verificacao
+  encerrada
+
+  @@map("status_rnc")
+}
+
+enum Severidade {
+  critica
+  alta
+  media
+  baixa
+
+  @@map("severidade")
+}
+
+enum Origem {
+  erro_interno
+  cliente
+  sistema_software
+  mudanca_legislacao
+  fornecedor_terceiro
+  orgao_publico
+
+  @@map("origem")
+}
+
+enum MetodoAnalise {
+  cinco_porques
+  ishikawa
+
+  @@map("metodo_analise")
+}
+
+enum ResultadoVerificacao {
+  eficaz
+  ineficaz
+
+  @@map("resultado_verificacao")
+}
+
+enum EtapaAnexo {
+  registro
+  analise
+  acao
+  verificacao
+
+  @@map("etapa_anexo")
+}
+
+enum TipoEvento {
+  registro
+  edicao
+  impacto_atualizado
+  analise_concluida
+  acao_concluida
+  verificacao_eficaz
+  verificacao_ineficaz
+  responsavel_alterado
+  anexo_adicionado
+  anexo_removido
+
+  @@map("tipo_evento")
+}
+
+// ---------- Cadastros ----------
+
+model Usuario {
+  id               String    @id @default(uuid()) @db.Uuid
+  nome             String    @db.VarChar(120)
+  email            String    @unique @db.VarChar(254)
+  // Hash Argon2id. Nulo enquanto a pessoa não definiu a senha pelo convite.
+  senhaHash        String?   @map("senha_hash")
+  perfil           Perfil    @default(colaborador)
+  setorId          String?   @map("setor_id") @db.Uuid
+  ativo            Boolean   @default(true)
+  deveTrocarSenha  Boolean   @default(false) @map("deve_trocar_senha")
+  ultimoAcessoEm   DateTime? @map("ultimo_acesso_em") @db.Timestamptz(3)
+  // Proteção contra tentativas repetidas de senha
+  tentativasFalhas Int       @default(0) @map("tentativas_falhas")
+  bloqueadoAte     DateTime? @map("bloqueado_ate") @db.Timestamptz(3)
+  criadoEm         DateTime  @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm     DateTime  @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  setor Setor? @relation(fields: [setorId], references: [id], onDelete: Restrict)
+
+  sessoes       Sessao[]
+  tokensSenha   TokenSenha[]              @relation("TokenDoUsuario")
+  tokensCriados TokenSenha[]              @relation("TokenCriadoPor")
+  notificacoes  NotificacaoDestinatario[]
+
+  rncsRegistradas    Rnc[]           @relation("RncAutor")
+  analisesConcluidas Analise[]       @relation("AnaliseConcluidaPor")
+  acoesResponsavel   AcaoCorretiva[] @relation("AcaoResponsavel")
+  acoesConcluidas    AcaoCorretiva[] @relation("AcaoConcluidaPor")
+  verificacoesFeitas Verificacao[]   @relation("VerificadoPor")
+  eventosHistorico   Historico[]
+  anexosEnviados     Anexo[]         @relation("AnexoEnviadoPor")
+  anexosRemovidos    Anexo[]         @relation("AnexoRemovidoPor")
+
+  @@index([setorId])
+  @@index([perfil, ativo])
+  @@map("usuarios")
+}
+
+// Sessões de login. O cookie guarda um token aleatório; aqui fica só o
+// hash SHA-256 dele, então um vazamento do banco não dá acesso.
+model Sessao {
+  id          String    @id @default(uuid()) @db.Uuid
+  tokenHash   String    @unique @map("token_hash") @db.Char(64)
+  usuarioId   String    @map("usuario_id") @db.Uuid
+  criadaEm    DateTime  @default(now()) @map("criada_em") @db.Timestamptz(3)
+  expiraEm    DateTime  @map("expira_em") @db.Timestamptz(3)
+  encerradaEm DateTime? @map("encerrada_em") @db.Timestamptz(3)
+  userAgent   String?   @map("user_agent") @db.VarChar(400)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([expiraEm])
+  @@map("sessoes")
+}
+
+enum TipoTokenSenha {
+  convite
+  redefinicao
+
+  @@map("tipo_token_senha")
+}
+
+// Links de uso único para definir a senha (convite) ou redefini-la.
+model TokenSenha {
+  id          String         @id @default(uuid()) @db.Uuid
+  tokenHash   String         @unique @map("token_hash") @db.Char(64)
+  tipo        TipoTokenSenha
+  usuarioId   String         @map("usuario_id") @db.Uuid
+  criadoPorId String?        @map("criado_por_id") @db.Uuid
+  criadoEm    DateTime       @default(now()) @map("criado_em") @db.Timestamptz(3)
+  expiraEm    DateTime       @map("expira_em") @db.Timestamptz(3)
+  usadoEm     DateTime?      @map("usado_em") @db.Timestamptz(3)
+
+  usuario   Usuario  @relation("TokenDoUsuario", fields: [usuarioId], references: [id], onDelete: Cascade)
+  criadoPor Usuario? @relation("TokenCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId])
+  @@map("tokens_senha")
+}
+
+model Setor {
+  id           String   @id @default(uuid()) @db.Uuid
+  nome         String   @unique @db.VarChar(80)
+  ordem        Int      @default(0)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  usuarios Usuario[]
+  rncs     Rnc[]
+
+  @@map("setores")
+}
+
+// Tipos de problema padronizados. A RNC guarda o texto digitado e,
+// quando ele coincide com uma categoria, também o vínculo.
+model Categoria {
+  id              String   @id @default(uuid()) @db.Uuid
+  nome            String   @db.VarChar(120)
+  // minúsculas, sem acentos, sem espaços nas pontas
+  nomeNormalizado String   @unique @map("nome_normalizado") @db.VarChar(120)
+  ordem           Int      @default(0)
+  ativo           Boolean  @default(true)
+  criadoEm        DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm    DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  rncs Rnc[]
+
+  @@map("categorias")
+}
+
+// Clientes do escritório. Só o necessário para identificar o cliente (nome,
+// CNPJ, código interno): nada de CPF, dados bancários ou de funcionários (LGPD).
+model Cliente {
+  id              String   @id @default(uuid()) @db.Uuid
+  nome            String   @db.VarChar(160)
+  nomeNormalizado String   @map("nome_normalizado") @db.VarChar(160)
+  // Código do cliente no sistema contábil, se houver
+  codigoInterno   String?  @unique @map("codigo_interno") @db.VarChar(40)
+  // Só os 14 caracteres, sem pontuação (aceita o CNPJ alfanumérico)
+  cnpj            String?  @unique @db.Char(14)
+  ativo           Boolean  @default(true)
+  criadoEm        DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm    DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  rncs Rnc[]
+
+  @@index([nomeNormalizado])
+  @@map("clientes")
+}
+
+// ---------- RNC e seu ciclo ----------
+
+model Rnc {
+  id               String     @id @default(uuid()) @db.Uuid
+  // RNC-AAMM-XXXX, sequencial dentro do mês (ver rnc_contadores)
+  codigo           String     @unique @db.VarChar(13)
+  dataOcorrencia   DateTime   @map("data_ocorrencia") @db.Date
+  setorId          String     @map("setor_id") @db.Uuid
+  clienteId        String?    @map("cliente_id") @db.Uuid
+  categoriaId      String?    @map("categoria_id") @db.Uuid
+  tipoProblema     String     @map("tipo_problema") @db.VarChar(160)
+  // Chave da reincidência: minúsculas, sem acentos, sem espaços nas pontas
+  tipoProblemaNorm String     @map("tipo_problema_norm") @db.VarChar(160)
+  origem           Origem
+  severidade       Severidade
+  descricao        String
+  correcaoImediata String?    @map("correcao_imediata")
+  multasJuros      Decimal    @default(0) @map("multas_juros") @db.Decimal(12, 2)
+  horasRetrabalho  Decimal    @default(0) @map("horas_retrabalho") @db.Decimal(8, 2)
+  status           StatusRnc  @default(analise)
+  // Ciclo atual = reaberturas + 1
+  reaberturas      Int        @default(0)
+  autorId          String     @map("autor_id") @db.Uuid
+  criadaEm         DateTime   @default(now()) @map("criada_em") @db.Timestamptz(3)
+  atualizadaEm     DateTime   @updatedAt @map("atualizada_em") @db.Timestamptz(3)
+  encerradaEm      DateTime?  @map("encerrada_em") @db.Timestamptz(3)
+
+  setor     Setor      @relation(fields: [setorId], references: [id], onDelete: Restrict)
+  cliente   Cliente?   @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  categoria Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  autor     Usuario    @relation("RncAutor", fields: [autorId], references: [id], onDelete: Restrict)
+
+  analises     Analise[]
+  acoes        AcaoCorretiva[]
+  verificacoes Verificacao[]
+  historico    Historico[]
+  anexos       Anexo[]
+  notificacoes Notificacao[]
+
+  // Filtros da lista e do painel
+  @@index([status])
+  @@index([setorId, status])
+  @@index([severidade, status])
+  @@index([criadaEm(sort: Desc)])
+  @@index([encerradaEm])
+  @@index([dataOcorrencia])
+  // Reincidência e problemas recorrentes: (setor, tipo) no período
+  @@index([setorId, tipoProblemaNorm, criadaEm])
+  @@index([clienteId])
+  @@index([autorId])
+  @@map("rncs")
+}
+
+// Último número usado por mês, para gerar o código sem colisão
+// (UPDATE ... RETURNING dentro da transação do registro).
+model RncContador {
+  anoMes String @id @map("ano_mes") @db.Char(4)
+  ultimo Int    @default(0)
+
+  @@map("rnc_contadores")
+}
+
+// Uma análise por ciclo. Quando a verificação é ineficaz, abre-se um
+// novo ciclo com análise em branco e a anterior fica preservada.
+model Analise {
+  id              String        @id @default(uuid()) @db.Uuid
+  rncId           String        @map("rnc_id") @db.Uuid
+  ciclo           Int           @default(1)
+  metodo          MetodoAnalise @default(cinco_porques)
+  porque1         String?       @map("porque_1")
+  porque2         String?       @map("porque_2")
+  porque3         String?       @map("porque_3")
+  porque4         String?       @map("porque_4")
+  porque5         String?       @map("porque_5")
+  ishMetodo       String?       @map("ish_metodo")
+  ishPessoas      String?       @map("ish_pessoas")
+  ishSistema      String?       @map("ish_sistema")
+  ishCliente      String?       @map("ish_cliente")
+  ishDocumentacao String?       @map("ish_documentacao")
+  ishPrazo        String?       @map("ish_prazo")
+  causaRaiz       String?       @map("causa_raiz")
+  concluidaEm     DateTime?     @map("concluida_em") @db.Timestamptz(3)
+  concluidaPorId  String?       @map("concluida_por_id") @db.Uuid
+  criadoEm        DateTime      @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm    DateTime      @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  rnc          Rnc      @relation(fields: [rncId], references: [id], onDelete: Restrict)
+  concluidaPor Usuario? @relation("AnaliseConcluidaPor", fields: [concluidaPorId], references: [id], onDelete: Restrict)
+
+  @@unique([rncId, ciclo])
+  @@map("analises")
+}
+
+model AcaoCorretiva {
+  id                      String    @id @default(uuid()) @db.Uuid
+  rncId                   String    @map("rnc_id") @db.Uuid
+  ciclo                   Int       @default(1)
+  descricao               String?
+  responsavelId           String?   @map("responsavel_id") @db.Uuid
+  prazo                   DateTime? @db.Date
+  exigeAtualizarDocumento Boolean   @default(false) @map("exige_atualizar_documento")
+  // Data prevista da verificação de eficácia (padrão: hoje + 30 dias)
+  verificarEm             DateTime? @map("verificar_em") @db.Date
+  concluidaEm             DateTime? @map("concluida_em") @db.Timestamptz(3)
+  concluidaPorId          String?   @map("concluida_por_id") @db.Uuid
+  criadoEm                DateTime  @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm            DateTime  @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  rnc          Rnc          @relation(fields: [rncId], references: [id], onDelete: Restrict)
+  responsavel  Usuario?     @relation("AcaoResponsavel", fields: [responsavelId], references: [id], onDelete: Restrict)
+  concluidaPor Usuario?     @relation("AcaoConcluidaPor", fields: [concluidaPorId], references: [id], onDelete: Restrict)
+  verificacao  Verificacao?
+
+  @@unique([rncId, ciclo])
+  // "Pedem atenção", lembretes de prazo e "minhas ações"
+  @@index([concluidaEm, prazo])
+  @@index([verificarEm])
+  @@index([responsavelId, concluidaEm])
+  @@map("acoes_corretivas")
+}
+
+model Verificacao {
+  id              String               @id @default(uuid()) @db.Uuid
+  rncId           String               @map("rnc_id") @db.Uuid
+  ciclo           Int
+  acaoId          String               @unique @map("acao_id") @db.Uuid
+  resultado       ResultadoVerificacao
+  // Evidência e aprendizado
+  evidencia       String?
+  verificadoPorId String               @map("verificado_por_id") @db.Uuid
+  verificadoEm    DateTime             @default(now()) @map("verificado_em") @db.Timestamptz(3)
+
+  rnc           Rnc           @relation(fields: [rncId], references: [id], onDelete: Restrict)
+  acao          AcaoCorretiva @relation(fields: [acaoId], references: [id], onDelete: Restrict)
+  verificadoPor Usuario       @relation("VerificadoPor", fields: [verificadoPorId], references: [id], onDelete: Restrict)
+
+  @@unique([rncId, ciclo])
+  @@map("verificacoes")
+}
+
+// Histórico e trilha de auditoria. Só aceita INSERT: um trigger no banco
+// recusa UPDATE, DELETE e TRUNCATE.
+model Historico {
+  id             BigInt     @id @default(autoincrement())
+  rncId          String     @map("rnc_id") @db.Uuid
+  tipo           TipoEvento
+  texto          String
+  statusAnterior StatusRnc? @map("status_anterior")
+  statusNovo     StatusRnc? @map("status_novo")
+  ciclo          Int
+  // Nulo quando o evento é do próprio sistema
+  usuarioId      String?    @map("usuario_id") @db.Uuid
+  // Detalhes para auditoria, como campos alterados (antes/depois)
+  dados          Json?
+  criadoEm       DateTime   @default(now()) @map("criado_em") @db.Timestamptz(3)
+
+  rnc     Rnc      @relation(fields: [rncId], references: [id], onDelete: Restrict)
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([rncId, criadoEm])
+  @@index([usuarioId])
+  @@map("historico")
+}
+
+// Comprovantes, prints e guias. O arquivo fica no armazenamento
+// (SharePoint/OneDrive via Microsoft 365); aqui só a referência.
+model Anexo {
+  id            String     @id @default(uuid()) @db.Uuid
+  rncId         String     @map("rnc_id") @db.Uuid
+  etapa         EtapaAnexo @default(registro)
+  ciclo         Int        @default(1)
+  nomeArquivo   String     @map("nome_arquivo") @db.VarChar(255)
+  tipoMime      String     @map("tipo_mime") @db.VarChar(127)
+  tamanhoBytes  Int        @map("tamanho_bytes")
+  // Onde está o arquivo: provedor (ex.: "sharepoint") e a chave/ID nele
+  armazenamento String     @db.VarChar(40)
+  chave         String     @db.VarChar(1024)
+  sha256        String?    @db.Char(64)
+  enviadoPorId  String     @map("enviado_por_id") @db.Uuid
+  enviadoEm     DateTime   @default(now()) @map("enviado_em") @db.Timestamptz(3)
+  // Remoção lógica: o registro fica para a auditoria
+  removidoEm    DateTime?  @map("removido_em") @db.Timestamptz(3)
+  removidoPorId String?    @map("removido_por_id") @db.Uuid
+
+  rnc         Rnc      @relation(fields: [rncId], references: [id], onDelete: Restrict)
+  enviadoPor  Usuario  @relation("AnexoEnviadoPor", fields: [enviadoPorId], references: [id], onDelete: Restrict)
+  removidoPor Usuario? @relation("AnexoRemovidoPor", fields: [removidoPorId], references: [id], onDelete: Restrict)
+
+  @@index([rncId])
+  @@map("anexos")
+}
+
+// ---------- Notificações por e-mail ----------
+
+enum TipoNotificacao {
+  acao_atribuida
+  lembrete_prazo_3d
+  lembrete_prazo_dia
+  verificacao_liberada
+  resumo_semanal
+  teste
+
+  @@map("tipo_notificacao")
+}
+
+enum StatusNotificacao {
+  pendente
+  enviada
+  falhou
+
+  @@map("status_notificacao")
+}
+
+// Fila de saída: o e-mail é gravado junto com o evento que o gerou e
+// enviado depois. A chave única impede o mesmo aviso de sair duas vezes.
+model Notificacao {
+  id                 String            @id @default(uuid()) @db.Uuid
+  chave              String            @unique @db.VarChar(200)
+  tipo               TipoNotificacao
+  rncId              String?           @map("rnc_id") @db.Uuid
+  assunto            String            @db.VarChar(300)
+  html               String
+  texto              String
+  status             StatusNotificacao @default(pendente)
+  tentativas         Int               @default(0)
+  ultimoErro         String?           @map("ultimo_erro")
+  // Não tentar de novo antes desta hora (espera crescente entre falhas)
+  proximaTentativaEm DateTime          @default(now()) @map("proxima_tentativa_em") @db.Timestamptz(3)
+  criadaEm           DateTime          @default(now()) @map("criada_em") @db.Timestamptz(3)
+  enviadaEm          DateTime?         @map("enviada_em") @db.Timestamptz(3)
+
+  rnc           Rnc?                      @relation(fields: [rncId], references: [id], onDelete: Restrict)
+  destinatarios NotificacaoDestinatario[]
+
+  @@index([status, proximaTentativaEm])
+  @@index([criadaEm(sort: Desc)])
+  @@map("notificacoes")
+}
+
+model NotificacaoDestinatario {
+  notificacaoId String @map("notificacao_id") @db.Uuid
+  usuarioId     String @map("usuario_id") @db.Uuid
+  // E-mail no momento do envio
+  email         String @db.VarChar(254)
+
+  notificacao Notificacao @relation(fields: [notificacaoId], references: [id], onDelete: Cascade)
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@id([notificacaoId, usuarioId])
+  @@index([usuarioId])
+  @@map("notificacao_destinatarios")
+}

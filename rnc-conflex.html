@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Não conformidades — Conflex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F5F6; --surface:#FFFFFF; --surface-2:#F7F9FA; --ink:#15222C; --muted:#5A6A75; --line:#D8E0E4;
+  --brand:#1D4E5F; --brand-ink:#FFFFFF; --brand-soft:#E2EDF0; --ok:#2B7659; --ok-soft:#E1F1EA;
+  --crit:#B42318; --alta:#B54708; --media:#8A6800; --baixa:#3B6A8C;
+  --crit-soft:#FDECEA; --alta-soft:#FDF0E3; --media-soft:#FBF4DC; --baixa-soft:#E6EFF5;
+  --focus:#2F7FA0;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E161B; --surface:#162128; --surface-2:#1B2830; --ink:#E5ECEF; --muted:#94A4AD; --line:#2A3942;
+    --brand:#86BFD1; --brand-ink:#0E161B; --brand-soft:#1D3540; --ok:#6CC49F; --ok-soft:#173329;
+    --crit:#F7766B; --alta:#F59A3C; --media:#E0B947; --baixa:#8DB4D2;
+    --crit-soft:#3A1C1A; --alta-soft:#3A2614; --media-soft:#352D12; --baixa-soft:#1A2B38;
+    --focus:#86BFD1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E161B; --surface:#162128; --surface-2:#1B2830; --ink:#E5ECEF; --muted:#94A4AD; --line:#2A3942;
+  --brand:#86BFD1; --brand-ink:#0E161B; --brand-soft:#1D3540; --ok:#6CC49F; --ok-soft:#173329;
+  --crit:#F7766B; --alta:#F59A3C; --media:#E0B947; --baixa:#8DB4D2;
+  --crit-soft:#3A1C1A; --alta-soft:#3A2614; --media-soft:#352D12; --baixa-soft:#1A2B38;
+  --focus:#86BFD1;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 20px 64px}
+
+/* Cabeçalho */
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.brand h1{margin:0;font-size:26px;line-height:1.15;font-weight:700;letter-spacing:-.015em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:500}
+.tab[aria-current="page"]{background:var(--brand-soft);border-color:var(--brand);color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--surface);padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.btn.warn{border-color:var(--crit);color:var(--crit)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.small{padding:6px 12px;font-size:14px}
+
+.notice{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brand);padding:10px 14px;border-radius:6px;margin-bottom:20px;font-size:14px;color:var(--muted)}
+.notice strong{color:var(--ink)}
+
+/* Ciclo — o elemento principal do painel */
+.cycle{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 22px 18px;margin-bottom:22px}
+.cycle h2{margin:0 0 4px;font-size:17px}
+.cycle .sub{margin:0 0 18px;color:var(--muted);font-size:14px}
+.stations{display:grid;grid-template-columns:repeat(4,1fr);position:relative}
+.station{position:relative;padding:0 8px;text-align:left;background:none;border:0;cursor:pointer;border-radius:8px}
+.station:hover .count{color:var(--brand)}
+.station .rail{height:6px;background:var(--line);margin:0 -8px 14px;position:relative}
+.station:first-child .rail{margin-left:0;border-radius:3px 0 0 3px}
+.station:last-child .rail{margin-right:0;border-radius:0 3px 3px 0}
+.station .rail::after{content:"";position:absolute;left:0;top:50%;width:16px;height:16px;border-radius:50%;background:var(--surface);border:3px solid var(--brand);transform:translate(0,-50%)}
+.station.done .rail{background:var(--ok)}
+.station.done .rail::after{border-color:var(--ok);background:var(--ok)}
+.station .count{font-size:44px;line-height:1;font-weight:700;letter-spacing:-.03em;display:block}
+.station .name{font-weight:600;display:block;margin-top:6px}
+.station .hint{font-size:13px;color:var(--muted);display:block}
+.loopback{margin-top:16px;font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.loopback svg{flex:none}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:22px}
+.kpi{background:var(--surface);padding:14px 16px}
+.kpi .v{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.kpi .l{font-size:13px;color:var(--muted)}
+.kpi.alert .v{color:var(--crit)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.panel h3{margin:0 0 4px;font-size:16px}
+.panel .sub{margin:0 0 14px;color:var(--muted);font-size:13px}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+
+.hbar{display:grid;grid-template-columns:150px 1fr 34px;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+.hbar .track{height:14px;background:var(--surface-2);border-radius:3px;display:flex;overflow:hidden}
+.hbar .seg{height:100%}
+.hbar .n{text-align:right;font-weight:600}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+.months{display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:10px}
+.month{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
+.month .bar{width:100%;max-width:46px;background:var(--brand);border-radius:4px 4px 0 0;min-height:2px}
+.month .bar.zero{background:var(--line)}
+.month .c{font-size:13px;font-weight:600}
+.month .m{font-size:12px;color:var(--muted)}
+
+.attn{list-style:none;margin:0;padding:0}
+.attn li{border-top:1px solid var(--line)}
+.attn li:first-child{border-top:0}
+.attn button{display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;background:none;border:0;padding:10px 0;cursor:pointer}
+.attn button:hover .t{text-decoration:underline}
+.attn .t{flex:1}
+.attn .d{font-size:13px;color:var(--crit);white-space:nowrap}
+
+/* Badges */
+.sev{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.sev.critica{background:var(--crit-soft);color:var(--crit)}
+.sev.alta{background:var(--alta-soft);color:var(--alta)}
+.sev.media{background:var(--media-soft);color:var(--media)}
+.sev.baixa{background:var(--baixa-soft);color:var(--baixa)}
+.code{font-weight:600;white-space:nowrap}
+
+/* Mini trilha do ciclo */
+.mini{display:inline-flex;gap:3px;align-items:center}
+.mini span{width:18px;height:6px;border-radius:2px;background:var(--line)}
+.mini span.done{background:var(--ok)}
+.mini span.cur{background:var(--brand)}
+
+/* Lista */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.filters input,.filters select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px}
+.filters input{flex:1;min-width:200px}
+.filters .spacer{flex:1}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:grid;grid-template-columns:120px 86px 1.1fr 1.3fr 82px 90px 92px;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;cursor:pointer;font-size:14px}
+.row:hover{background:var(--surface-2)}
+.row.head{cursor:default;font-size:13px;color:var(--muted);border-top:0;background:var(--surface-2);font-weight:500}
+.row .cat{display:block;color:var(--muted);font-size:13px}
+.row .late{color:var(--crit);font-weight:600}
+
+/* Formulários */
+form.card,.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:18px}
+.card h2{margin:0 0 4px;font-size:19px}
+.card h3{margin:0 0 2px;font-size:17px}
+.card .sub{margin:0 0 18px;color:var(--muted);font-size:14px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label,.field .lab{font-weight:600;font-size:14px}
+.field small{color:var(--muted);font-size:13px}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:9px 11px;width:100%}
+.field textarea{min-height:84px;resize:vertical}
+.sevpick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sevpick label{border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-weight:400;background:var(--surface-2)}
+.sevpick input{position:absolute;opacity:0;pointer-events:none}
+.sevpick label:has(input:checked){border-color:currentColor;border-width:2px;padding:9px 11px}
+.sevpick label:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px}
+.sevpick .nm{font-weight:700}
+.sevpick .ds{font-size:12.5px;color:var(--muted)}
+.sevpick .critica{color:var(--crit)} .sevpick .alta{color:var(--alta)} .sevpick .media{color:var(--media)} .sevpick .baixa{color:var(--baixa)}
+.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.err{color:var(--crit);font-size:14px;margin-top:10px}
+
+/* Detalhe */
+.back{background:none;border:0;color:var(--brand);font-weight:600;cursor:pointer;padding:0;margin-bottom:14px}
+.dhead{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-bottom:18px}
+.dhead h2{margin:0;font-size:22px;letter-spacing:-.01em}
+.dhead .meta{color:var(--muted);font-size:14px;margin-top:4px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:0 0 22px;padding:0;list-style:none;counter-reset:s}
+.steps li{position:relative;padding-top:20px;font-size:13.5px;color:var(--muted)}
+.steps li::before{content:"";position:absolute;top:5px;left:0;right:0;height:4px;background:var(--line)}
+.steps li::after{content:"";position:absolute;top:0;left:0;width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--line)}
+.steps li.done{color:var(--ink)}
+.steps li.done::before,.steps li.done::after{background:var(--ok);border-color:var(--ok)}
+.steps li.cur{color:var(--ink);font-weight:600}
+.steps li.cur::after{border-color:var(--brand)}
+.stage{border-left:3px solid var(--line)}
+.stage.cur{border-left-color:var(--brand)}
+.stage.done{border-left-color:var(--ok)}
+.stage.locked{opacity:.6}
+.ro dt{font-weight:600;font-size:13.5px;color:var(--muted);margin-top:10px}
+.ro dt:first-child{margin-top:0}
+.ro dd{margin:2px 0 0;white-space:pre-wrap}
+.whys{display:flex;flex-direction:column;gap:8px;counter-reset:w}
+.whys .field{flex-direction:row;align-items:center;gap:10px}
+.whys .field span{flex:none;width:86px;font-size:13.5px;color:var(--muted)}
+.result{display:flex;gap:10px;flex-wrap:wrap}
+.result label{border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer;background:var(--surface-2);font-weight:500}
+.result label:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+.hist{list-style:none;margin:0;padding:0;font-size:14px}
+.hist li{padding:6px 0;border-top:1px solid var(--line);color:var(--muted)}
+.hist li:first-child{border-top:0}
+.hist b{color:var(--ink);font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:900px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid2{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr auto;gap:4px 12px}
+  .row.head{display:none}
+  .row > :nth-child(2),.row > :nth-child(7){display:none}
+  .row > :nth-child(3){grid-column:1/-1;grid-row:2}
+  .row > :nth-child(4){grid-column:1/-1;grid-row:3}
+  .row > :nth-child(5){grid-row:1;grid-column:2}
+  .row > :nth-child(6){grid-column:1/-1;grid-row:4}
+}
+@media (max-width:640px){
+  .wrap{padding:16px 14px 48px}
+  .stations{grid-template-columns:repeat(2,1fr);row-gap:18px}
+  .station .rail{margin:0 0 12px!important;border-radius:3px!important}
+  .station .count{font-size:36px}
+  .fields{grid-template-columns:1fr}
+  .sevpick{grid-template-columns:1fr 1fr}
+  .hbar{grid-template-columns:110px 1fr 28px}
+  .steps li{font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Não conformidades</h1>
+      <p>Conflex Assessoria Contábil, registro e melhoria de processos</p>
+    </div>
+    <nav class="tabs" aria-label="Seções">
+      <button class="tab" data-view="painel">Painel</button>
+      <button class="tab" data-view="lista">Registros</button>
+      <button class="btn primary" data-view="nova">Registrar RNC</button>
+    </nav>
+  </header>
+  <div id="status"></div>
+  <main id="main" tabindex="-1"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Definições do domínio ---------- */
+const SETORES=["Fiscal","Contábil","Pessoal/Folha","Societário/Legalização","Atendimento","Financeiro interno"];
+const ORIGENS=["Erro interno","Cliente","Sistema/software","Mudança na legislação","Fornecedor/terceiro","Órgão público"];
+const SEV={
+  critica:{label:"Crítica",desc:"Gera multa, autuação ou risco legal"},
+  alta:{label:"Alta",desc:"Exige retificação ou retrabalho significativo"},
+  media:{label:"Média",desc:"Atraso interno, sem impacto externo"},
+  baixa:{label:"Baixa",desc:"Oportunidade de melhoria"}
+};
+const SEV_ORDER=["critica","alta","media","baixa"];
+const CATEGORIAS=["Guia paga em atraso","Obrigação acessória entregue fora do prazo","Retificação de declaração","Erro de cálculo na folha","Lançamento contábil incorreto","Classificação fiscal incorreta","Documento do cliente entregue em atraso","Cadastro desatualizado","Falha de comunicação com o cliente","Conciliação bancária com divergência","Prazo de legalização perdido"];
+const ETAPAS={
+  analise:{label:"Aguardando análise de causa",short:"Análise de causa",idx:1},
+  acao:{label:"Ação corretiva em andamento",short:"Ação corretiva",idx:2},
+  verificacao:{label:"Aguardando verificação de eficácia",short:"Verificação",idx:3},
+  encerrada:{label:"Encerrada",short:"Encerrada",idx:4}
+};
+const STEP_NAMES=["Registro","Causa raiz","Ação corretiva","Eficácia"];
+const ISHIKAWA=["Método/processo","Pessoas","Sistema/software","Cliente","Documentação","Prazo/ambiente"];
+
+/* ---------- Estado ---------- */
+const S={rncs:[],loaded:false,view:"painel",sel:null,filters:{q:"",etapa:"abertas",setor:"",sev:""},uid:null,canWrite:true,mode:"connecting",names:{},user:null,downloads:null};
+let store=null;
+
+/* ---------- Utilidades ---------- */
+const $=s=>document.querySelector(s);
+const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const addDays=(str,n)=>{const d=new Date(str+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const fmtDate=s=>{if(!s)return "";const d=new Date(s.length===10?s+"T12:00:00":s);return isNaN(d)?"":d.toLocaleDateString("pt-BR")};
+const fmtMoney=n=>(Number(n)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
+const daysBetween=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
+const norm=s=>String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const newCode=()=>{const d=new Date();return "RNC-"+String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,"0")+"-"+Math.random().toString(36).slice(2,6).toUpperCase()};
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2600)}
+function nameOf(id){if(!id)return "Alguém";if(id===S.uid)return "você";return S.names[id]||"Alguém"}
+
+function isLateAcao(r){return r.status==="acao"&&r.prazo&&r.prazo<todayStr()}
+function isDueVerif(r){return r.status==="verificacao"&&r.verificarEm&&r.verificarEm<=todayStr()}
+
+/* ---------- Armazenamento ---------- */
+function localStore(){
+  const KEY="rnc-conflex-local";
+  let subs=[];
+  const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}};
+  const emit=()=>{const all=read();const arr=Object.keys(all).map(id=>Object.assign({id},all[id])).sort((a,b)=>(b.criadaEm||"").localeCompare(a.criadaEm||""));subs.forEach(f=>f(arr))};
+  return {mode:"local",
+    subscribe(cb){subs.push(cb);setTimeout(emit,0);return()=>{subs=subs.filter(f=>f!==cb)}},
+    async save(id,data){const all=read();all[id]=data;try{localStorage.setItem(KEY,JSON.stringify(all))}catch(e){throw {code:"local_full"}}emit()}
+  };
+}
+function sharedStore(db){
+  const col=db.collection("rncs");
+  return {mode:"shared",
+    subscribe(cb,err){return col.orderBy("criadaEm","desc").limit(1000).onSnapshot(s=>cb(s.docs.map(d=>Object.assign({id:d.id},d.data()))),err)},
+    save(id,data){return col.doc(id).set(data)}
+  };
+}
+function clean(r){const o=JSON.parse(JSON.stringify(r));delete o.id;return o}
+
+async function persist(rec){
+  if(!S.canWrite){toast("Você tem acesso só de leitura a este app.");return false}
+  try{await store.save(rec.id,clean(rec));return true}
+  catch(e){
+    const code=e&&e.code;
+    if(code==="invalid_argument"){S.canWrite=false;renderStatus();toast("Não foi possível salvar: seu acesso é só de leitura.")}
+    else if(code==="quota_exceeded")toast("O banco de RNCs está cheio. Exclua registros antigos para continuar.");
+    else if(code==="unavailable"){await new Promise(r=>setTimeout(r,600+Math.random()*600));try{await store.save(rec.id,clean(rec));return true}catch(_){toast("Conexão instável. Tente salvar de novo.")}}
+    else toast("Não foi possível salvar. Tente de novo.");
+    return false;
+  }
+}
+
+async function resolveNames(){
+  if(!S.user)return;
+  const ids=[...new Set(S.rncs.flatMap(r=>[r.autorId,...(r.historico||[]).map(h=>h.por)]).filter(Boolean))].filter(id=>!(id in S.names));
+  if(!ids.length)return;
+  try{const ps=await S.user.profiles(ids);let ch=false;ids.forEach(id=>{const n=(ps[id]&&ps[id].name)||"";S.names[id]=n;if(n)ch=true});if(ch)render()}catch(e){}
+}
+
+async function init(){
+  render();
+  const hasClaude=window.claude&&typeof window.claude.use==="function";
+  let db=null;
+  if(hasClaude){
+    try{db=await window.claude.use("db")}catch(e){db=null}
+    try{S.user=await window.claude.use("user")}catch(e){S.user=null}
+    try{S.downloads=await window.claude.use("downloads")}catch(e){S.downloads=null}
+  }
+  if(db){
+    store=sharedStore(db);S.mode="shared";
+    if(S.user){
+      try{S.uid=await S.user.id()}catch(e){}
+      try{const c=await S.user.can("data.write");if(c===false)S.canWrite=false}catch(e){}
+    }
+  }else{store=localStore();S.mode="local"}
+  renderStatus();
+  store.subscribe(arr=>{S.rncs=arr;S.loaded=true;render();resolveNames()},e=>{S.loaded=true;renderStatus("Os registros não puderam ser carregados. Recarregue a página.");render()});
+}
+
+/* ---------- Métricas ---------- */
+function metrics(){
+  const now=new Date();const y1=new Date(now);y1.setFullYear(now.getFullYear()-1);const y1s=y1.toISOString();
+  const d180=new Date(now);d180.setDate(now.getDate()-180);const d180s=d180.toISOString();
+  const all=S.rncs;const ano=all.filter(r=>(r.criadaEm||"")>=y1s);
+  const abertas=all.filter(r=>r.status!=="encerrada");
+  const porEtapa={analise:0,acao:0,verificacao:0,encerrada:0};
+  all.forEach(r=>{if(r.status in porEtapa){if(r.status!=="encerrada"||(r.encerradaEm||"")>=y1s)porEtapa[r.status]++}});
+  const atrasadas=all.filter(isLateAcao);const devidas=all.filter(isDueVerif);
+  const enc=ano.filter(r=>r.status==="encerrada"&&r.encerradaEm);
+  const tempo=enc.length?Math.round(enc.reduce((s,r)=>s+daysBetween(r.criadaEm,r.encerradaEm),0)/enc.length):null;
+  const custo=ano.reduce((s,r)=>s+(Number(r.custo)||0),0);const horas=ano.reduce((s,r)=>s+(Number(r.horas)||0),0);
+  const cliente=ano.length?Math.round(100*ano.filter(r=>r.origem==="Cliente").length/ano.length):null;
+  const ineficazes=all.reduce((s,r)=>s+(r.reaberturas||0),0);
+  const setor={};SETORES.forEach(k=>setor[k]={critica:0,alta:0,media:0,baixa:0,t:0});
+  ano.forEach(r=>{if(setor[r.setor]&&SEV[r.severidade]){setor[r.setor][r.severidade]++;setor[r.setor].t++}});
+  const origem={};ORIGENS.forEach(k=>origem[k]=0);ano.forEach(r=>{if(r.origem in origem)origem[r.origem]++});
+  const meses=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");meses.push({key,label:d.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""),n:0})}
+  all.forEach(r=>{const k=(r.criadaEm||"").slice(0,7);const m=meses.find(x=>x.key===k);if(m)m.n++});
+  const rec={};all.filter(r=>(r.criadaEm||"")>=d180s&&r.categoria).forEach(r=>{const k=r.setor+"|"+norm(r.categoria);(rec[k]=rec[k]||{setor:r.setor,cat:r.categoria,n:0}).n++});
+  const recorrentes=Object.values(rec).filter(x=>x.n>1).sort((a,b)=>b.n-a.n);
+  const recAno={};ano.filter(r=>r.categoria).forEach(r=>{const k=r.setor+"|"+norm(r.categoria);recAno[k]=(recAno[k]||0)+1});
+  const reinc=ano.length?Math.round(100*ano.filter(r=>r.categoria&&recAno[r.setor+"|"+norm(r.categoria)]>1).length/ano.length):null;
+  return {ano,abertas,porEtapa,atrasadas,devidas,tempo,custo,horas,cliente,ineficazes,setor,origem,meses,recorrentes,reinc};
+}
+
+/* ---------- Render ---------- */
+function renderStatus(msg){
+  const el=$("#status");let h="";
+  if(msg)h=`<div class="notice"><strong>${esc(msg)}</strong></div>`;
+  else if(S.mode==="local")h=`<div class="notice"><strong>Modo local.</strong> Os registros ficam só neste navegador. Abra o app pelo link do Claude para a equipe compartilhar a mesma base.</div>`;
+  else if(S.mode==="shared"&&!S.canWrite)h=`<div class="notice"><strong>Acesso só de leitura.</strong> Peça a quem compartilhou o app o nível Colaborador para registrar e tratar RNCs.</div>`;
+  el.innerHTML=h;
+}
+
+function render(){
+  document.querySelectorAll("nav [data-view]").forEach(b=>{const v=b.dataset.view;const cur=(S.view===v)||(S.view==="detalhe"&&v==="lista");if(cur)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  const m=$("#main");
+  if(S.mode==="connecting"||!S.loaded){m.innerHTML=`<p class="empty">Carregando registros…</p>`;return}
+  if(S.view==="painel")m.innerHTML=viewPainel();
+  else if(S.view==="lista")m.innerHTML=viewLista();
+  else if(S.view==="nova")m.innerHTML=viewNova();
+  else if(S.view==="detalhe")m.innerHTML=viewDetalhe();
+  bindView();
+}
+
+function sevBadge(k){return SEV[k]?`<span class="sev ${k}">${SEV[k].label}</span>`:""}
+function mini(r){const i=ETAPAS[r.status]?ETAPAS[r.status].idx:1;return `<span class="mini" aria-label="${esc(ETAPAS[r.status]?ETAPAS[r.status].label:"")}">${[0,1,2,3].map(n=>`<span class="${n<i?"done":(n===i?"cur":"")}"></span>`).join("")}</span>`}
+
+function viewPainel(){
+  const M=metrics();
+  if(!S.rncs.length)return `<section class="cycle"><h2>Nenhuma não conformidade registrada ainda</h2><p class="sub">Quando alguém da equipe perceber um erro, atraso ou falha de processo, o registro começa aqui. O painel se monta sozinho a partir dos registros.</p><button class="btn primary" data-go="nova">Registrar a primeira RNC</button></section>`;
+  const st=[
+    {k:"analise",name:"Análise de causa",hint:"Registradas, sem causa raiz"},
+    {k:"acao",name:"Ação corretiva",hint:M.atrasadas.length?`${M.atrasadas.length} com prazo vencido`:"Em andamento"},
+    {k:"verificacao",name:"Verificação",hint:M.devidas.length?`${M.devidas.length} já podem ser verificadas`:"Aguardando o prazo de checagem"},
+    {k:"encerrada",name:"Encerradas",hint:"Eficazes, últimos 12 meses"}
+  ];
+  const maxSet=Math.max(1,...SETORES.map(s=>M.setor[s].t));
+  const maxOr=Math.max(1,...ORIGENS.map(o=>M.origem[o]));
+  const maxMes=Math.max(1,...M.meses.map(x=>x.n));
+  const attn=[...M.atrasadas.map(r=>({r,d:`Prazo venceu em ${fmtDate(r.prazo)}`})),...M.devidas.map(r=>({r,d:`Verificar desde ${fmtDate(r.verificarEm)}`})),...S.rncs.filter(r=>r.status==="analise"&&r.severidade==="critica").map(r=>({r,d:"Crítica sem análise"}))];
+  return `
+  <section class="cycle" aria-labelledby="ct">
+    <h2 id="ct">Onde as RNCs estão no ciclo</h2>
+    <p class="sub">${M.abertas.length} em aberto. Toque numa etapa para ver os registros dela.</p>
+    <div class="stations">
+      ${st.map(s=>`<button class="station ${s.k==="encerrada"?"done":""}" data-etapa="${s.k}"><span class="rail"></span><span class="count">${M.porEtapa[s.k]}</span><span class="name">${s.name}</span><span class="hint">${esc(s.hint)}</span></button>`).join("")}
+    </div>
+    <p class="loopback"><svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><path d="M16 2v4a3 3 0 0 1-3 3H4m0 0 3-3M4 9l3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Quando a verificação mostra que o problema voltou, a RNC retorna para a análise de causa${M.ineficazes?`. Isso já aconteceu ${M.ineficazes} ${M.ineficazes===1?"vez":"vezes"}.`:"."}</p>
+  </section>
+
+  <section class="kpis" aria-label="Indicadores dos últimos 12 meses">
+    <div class="kpi ${M.atrasadas.length+M.devidas.length?"alert":""}"><div class="v">${M.atrasadas.length+M.devidas.length}</div><div class="l">Pedem atenção agora</div></div>
+    <div class="kpi"><div class="v">${M.tempo==null?"—":M.tempo+" dias"}</div><div class="l">Tempo médio até encerrar</div></div>
+    <div class="kpi"><div class="v">${M.reinc==null?"—":M.reinc+"%"}</div><div class="l">Reincidência (mesmo tipo e setor)</div></div>
+    <div class="kpi"><div class="v">${M.cliente==null?"—":M.cliente+"%"}</div><div class="l">Com origem no cliente</div></div>
+    <div class="kpi"><div class="v">${fmtMoney(M.custo)}</div><div class="l">Multas e juros${M.horas?`, mais ${M.horas.toLocaleString("pt-BR")} h de retrabalho`:""}</div></div>
+  </section>
+
+  <div class="grid2">
+    <section class="panel">
+      <h3>Pedem atenção</h3><p class="sub">Prazos vencidos, verificações liberadas e críticas sem análise</p>
+      ${attn.length?`<ul class="attn">${attn.slice(0,8).map(a=>`<li><button data-open="${esc(a.r.id)}"><span class="code">${esc(a.r.codigo)}</span><span class="t">${esc(a.r.categoria||a.r.descricao||"").slice(0,70)}</span><span class="d">${esc(a.d)}</span></button></li>`).join("")}</ul>`:`<p class="empty">Nada atrasado. Tudo dentro do prazo.</p>`}
+    </section>
+    <section class="panel">
+      <h3>Registros por mês</h3><p class="sub">Últimos 6 meses</p>
+      <div class="months">${M.meses.map(x=>`<div class="month"><span class="c">${x.n}</span><div class="bar ${x.n?"":"zero"}" style="height:${Math.max(2,Math.round(100*x.n/maxMes))}%"></div><span class="m">${esc(x.label)}</span></div>`).join("")}</div>
+    </section>
+  </div>
+
+  <div class="grid2">
+    <section class="panel">
+      <h3>Por setor e severidade</h3><p class="sub">Últimos 12 meses</p>
+      ${SETORES.map(s=>{const v=M.setor[s];return `<div class="hbar"><span>${esc(s)}</span><span class="track">${SEV_ORDER.map(k=>v[k]?`<span class="seg" title="${SEV[k].label}: ${v[k]}" style="width:${100*v[k]/maxSet}%;background:var(--${k==="critica"?"crit":k})"></span>`:"").join("")}</span><span class="n">${v.t}</span></div>`}).join("")}
+      <div class="legend">${SEV_ORDER.map(k=>`<span><i style="background:var(--${k==="critica"?"crit":k})"></i>${SEV[k].label}</span>`).join("")}</div>
+    </section>
+    <section class="panel">
+      <h3>Por origem</h3><p class="sub">Últimos 12 meses. Origem no cliente ajuda a conversar sobre prazos de envio.</p>
+      ${ORIGENS.map(o=>`<div class="hbar"><span>${esc(o)}</span><span class="track"><span class="seg" style="width:${100*M.origem[o]/maxOr}%;background:var(--brand)"></span></span><span class="n">${M.origem[o]}</span></div>`).join("")}
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Problemas que se repetem</h3><p class="sub">Mesmo tipo de problema no mesmo setor, mais de uma vez nos últimos 180 dias. São os melhores candidatos a mudar um POP ou checklist.</p>
+    ${M.recorrentes.length?M.recorrentes.slice(0,8).map(x=>`<div class="hbar"><span>${esc(x.setor)}</span><span>${esc(x.cat)}</span><span class="n">${x.n}×</span></div>`).join(""):`<p class="empty">Nenhuma repetição detectada. Preencher o tipo de problema de forma padronizada deixa esta lista mais precisa.</p>`}
+  </section>`;
+}
+
+function filtered(){
+  const f=S.filters;const q=norm(f.q);
+  return S.rncs.filter(r=>{
+    if(f.etapa==="abertas"&&r.status==="encerrada")return false;
+    if(f.etapa&&f.etapa!=="abertas"&&f.etapa!=="todas"&&r.status!==f.etapa)return false;
+    if(f.setor&&r.setor!==f.setor)return false;
+    if(f.sev&&r.severidade!==f.sev)return false;
+    if(q&&!norm([r.codigo,r.cliente,r.categoria,r.descricao,r.responsavel].join(" ")).includes(q))return false;
+    return true;
+  });
+}
+function viewLista(){
+  const list=filtered();const f=S.filters;
+  return `
+  <div class="filters">
+    <label class="sr" for="fq">Buscar</label><input id="fq" type="search" placeholder="Buscar por cliente, código, tipo ou responsável" value="${esc(f.q)}">
+    <label class="sr" for="fe">Etapa</label><select id="fe">
+      <option value="abertas" ${f.etapa==="abertas"?"selected":""}>Em aberto</option>
+      <option value="todas" ${f.etapa==="todas"?"selected":""}>Todas</option>
+      ${Object.keys(ETAPAS).map(k=>`<option value="${k}" ${f.etapa===k?"selected":""}>${ETAPAS[k].short}</option>`).join("")}
+    </select>
+    <label class="sr" for="fs">Setor</label><select id="fs"><option value="">Todos os setores</option>${SETORES.map(s=>`<option ${f.setor===s?"selected":""}>${esc(s)}</option>`).join("")}</select>
+    <label class="sr" for="fv">Severidade</label><select id="fv"><option value="">Todas as severidades</option>${SEV_ORDER.map(k=>`<option value="${k}" ${f.sev===k?"selected":""}>${SEV[k].label}</option>`).join("")}</select>
+    ${S.downloads?`<button class="btn small" id="csv">Exportar CSV</button>`:""}
+  </div>
+  <div class="list" role="list">
+    <div class="row head" aria-hidden="true"><span>Código</span><span>Data</span><span>Setor e cliente</span><span>Problema</span><span>Severidade</span><span>Etapa</span><span>Prazo</span></div>
+    ${list.length?list.map(r=>{const late=isLateAcao(r);return `<button class="row" role="listitem" data-open="${esc(r.id)}">
+      <span class="code">${esc(r.codigo)}</span>
+      <span>${fmtDate(r.dataOcorrencia||r.criadaEm)}</span>
+      <span>${esc(r.setor)}<span class="cat">${esc(r.cliente||"Sem cliente")}</span></span>
+      <span>${esc(r.categoria||"Sem tipo")}<span class="cat">${esc((r.descricao||"").slice(0,80))}</span></span>
+      <span>${sevBadge(r.severidade)}</span>
+      <span>${mini(r)}</span>
+      <span class="${late?"late":""}">${r.status==="acao"&&r.prazo?fmtDate(r.prazo):(r.status==="verificacao"&&r.verificarEm?"Verif. "+fmtDate(r.verificarEm):"")}</span>
+    </button>`}).join(""):`<div class="row" style="cursor:default"><span class="empty" style="grid-column:1/-1">${S.rncs.length?"Nenhum registro com esses filtros.":"Nenhuma RNC registrada ainda."}</span></div>`}
+  </div>`;
+}
+
+function catList(){const set=new Set(CATEGORIAS);S.rncs.forEach(r=>r.categoria&&set.add(r.categoria));return `<datalist id="cats">${[...set].map(c=>`<option value="${esc(c)}">`).join("")}</datalist>`}
+
+function viewNova(){
+  return `
+  <form class="card" id="fnova" novalidate>
+    <h2>Registrar não conformidade</h2>
+    <p class="sub">Registre assim que perceber o problema. O objetivo é melhorar o processo, não apontar culpados.</p>
+    <div class="fields">
+      <div class="field"><label for="n-setor">Setor</label><select id="n-setor" required><option value="">Escolha o setor</option>${SETORES.map(s=>`<option>${esc(s)}</option>`).join("")}</select></div>
+      <div class="field"><label for="n-data">Data da ocorrência</label><input id="n-data" type="date" value="${todayStr()}" max="${todayStr()}"></div>
+      <div class="field"><label for="n-cliente">Cliente afetado</label><input id="n-cliente" placeholder="Deixe vazio se for um processo interno"></div>
+      <div class="field"><label for="n-cat">Tipo de problema</label><input id="n-cat" list="cats" placeholder="Ex.: Guia paga em atraso" required>${catList()}<small>Use sempre o mesmo nome para o mesmo tipo. É assim que o painel encontra repetições.</small></div>
+      <div class="field"><label for="n-origem">Origem</label><select id="n-origem" required><option value="">De onde veio o problema?</option>${ORIGENS.map(o=>`<option>${esc(o)}</option>`).join("")}</select></div>
+      <div class="field full"><span class="lab" id="sevlab">Severidade</span>
+        <div class="sevpick" role="radiogroup" aria-labelledby="sevlab">${SEV_ORDER.map(k=>`<label class="${k}"><input type="radio" name="sev" value="${k}"><span class="nm">${SEV[k].label}</span><span class="ds">${SEV[k].desc}</span></label>`).join("")}</div>
+      </div>
+      <div class="field full"><label for="n-desc">O que aconteceu</label><textarea id="n-desc" required placeholder="Descreva os fatos: o quê, quando, qual obrigação ou documento, como foi percebido."></textarea></div>
+      <div class="field full"><label for="n-corr">Correção imediata</label><textarea id="n-corr" placeholder="O que já foi feito para resolver o efeito. Ex.: guia reemitida e paga com juros em 10/10."></textarea></div>
+      <div class="field"><label for="n-custo">Multas e juros (R$)</label><input id="n-custo" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00"></div>
+      <div class="field"><label for="n-horas">Horas de retrabalho</label><input id="n-horas" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0"></div>
+    </div>
+    <p class="err" id="n-err" hidden></p>
+    <div class="actions"><button type="button" class="btn" data-go="painel">Cancelar</button><button type="submit" class="btn primary" ${S.canWrite?"":"disabled"}>Registrar RNC</button></div>
+  </form>`;
+}
+
+function stageClass(r,idx){const i=ETAPAS[r.status].idx;return idx<i?"done":(idx===i?"cur":"locked")}
+
+function viewDetalhe(){
+  const r=S.rncs.find(x=>x.id===S.sel);
+  if(!r)return `<button class="back" data-go="lista">← Voltar para registros</button><p class="empty">Este registro não existe mais.</p>`;
+  const i=ETAPAS[r.status].idx;const dis=S.canWrite?"":"disabled";
+  const whys=r.porques||["","","","",""];const ish=r.ishikawa||{};const metodo=r.metodo||"5porques";
+  const sA=stageClass(r,1),sB=stageClass(r,2),sC=stageClass(r,3);
+  return `
+  <button class="back" data-go="lista">← Voltar para registros</button>
+  <div class="dhead">
+    <div><h2>${esc(r.codigo)} ${sevBadge(r.severidade)}</h2>
+      <div class="meta">${esc(r.setor)}${r.cliente?", "+esc(r.cliente):""}. Registrada em ${fmtDate(r.criadaEm)} por ${esc(nameOf(r.autorId))}.</div></div>
+  </div>
+  <ol class="steps">${STEP_NAMES.map((n,k)=>`<li class="${k<i?"done":(k===i?"cur":"")}">${n}</li>`).join("")}</ol>
+
+  <section class="card stage done">
+    <h3>Registro</h3>
+    <dl class="ro">
+      <dt>Tipo de problema</dt><dd>${esc(r.categoria||"—")}</dd>
+      <dt>Origem</dt><dd>${esc(r.origem||"—")}</dd>
+      <dt>Data da ocorrência</dt><dd>${fmtDate(r.dataOcorrencia)||"—"}</dd>
+      <dt>O que aconteceu</dt><dd>${esc(r.descricao||"—")}</dd>
+      <dt>Correção imediata</dt><dd>${esc(r.correcao||"—")}</dd>
+    </dl>
+    <form id="fimp" class="fields" style="margin-top:16px">
+      <div class="field"><label for="d-custo">Multas e juros (R$)</label><input id="d-custo" type="number" min="0" step="0.01" value="${r.custo||""}" ${dis}></div>
+      <div class="field"><label for="d-horas">Horas de retrabalho</label><input id="d-horas" type="number" min="0" step="0.5" value="${r.horas||""}" ${dis}></div>
+    </form>
+    <div class="actions"><button class="btn small" id="b-imp" ${dis}>Atualizar impacto</button></div>
+  </section>
+
+  <section class="card stage ${sA}">
+    <h3>Análise de causa raiz</h3>
+    <p class="sub">${sA==="done"?"Concluída.":"Corrigir o efeito não basta. Pergunte por que o problema aconteceu até chegar a algo que o processo possa mudar."}</p>
+    ${sA==="done"?`<dl class="ro"><dt>Método</dt><dd>${metodo==="ishikawa"?"Ishikawa":"5 Porquês"}</dd>${metodo==="ishikawa"?ISHIKAWA.filter(c=>ish[c]).map(c=>`<dt>${esc(c)}</dt><dd>${esc(ish[c])}</dd>`).join(""):whys.filter(Boolean).map((w,k)=>`<dt>${k+1}º por quê</dt><dd>${esc(w)}</dd>`).join("")}<dt>Causa raiz</dt><dd>${esc(r.causaRaiz)}</dd></dl>`:`
+    <div class="fields">
+      <div class="field full"><label for="a-met">Método</label><select id="a-met" ${dis}><option value="5porques" ${metodo==="5porques"?"selected":""}>5 Porquês, bom para a maioria dos casos</option><option value="ishikawa" ${metodo==="ishikawa"?"selected":""}>Ishikawa, para problemas recorrentes ou com várias causas</option></select></div>
+      <div class="field full" id="a-5" ${metodo==="ishikawa"?"hidden":""}><div class="whys">${whys.map((w,k)=>`<div class="field"><span>${k+1}º por quê</span><input data-why="${k}" value="${esc(w)}" ${dis} aria-label="${k+1}º por quê"></div>`).join("")}</div></div>
+      <div class="field full" id="a-ish" ${metodo==="ishikawa"?"":"hidden"}><div class="fields">${ISHIKAWA.map(c=>`<div class="field"><label>${esc(c)}<textarea data-ish="${esc(c)}" ${dis} style="min-height:60px">${esc(ish[c]||"")}</textarea></label></div>`).join("")}</div></div>
+      <div class="field full"><label for="a-causa">Causa raiz</label><textarea id="a-causa" ${dis} placeholder="Ex.: o checklist de fechamento não tem conferência de vencimentos antecipados por feriado.">${esc(r.causaRaiz||"")}</textarea></div>
+    </div>
+    <p class="err" id="a-err" hidden></p>
+    ${sA==="cur"?`<div class="actions"><button class="btn" id="a-save" ${dis}>Salvar rascunho</button><button class="btn primary" id="a-next" ${dis}>Concluir análise</button></div>`:""}`}
+  </section>
+
+  <section class="card stage ${sB}">
+    <h3>Ação corretiva</h3>
+    <p class="sub">${sB==="locked"?"Liberada depois da análise de causa.":(sB==="done"?"Concluída.":"O que muda no processo para a causa raiz não se repetir.")}</p>
+    ${sB==="done"?`<dl class="ro"><dt>Ação</dt><dd>${esc(r.acao)}</dd><dt>Responsável</dt><dd>${esc(r.responsavel||"—")}</dd><dt>Prazo</dt><dd>${fmtDate(r.prazo)||"—"}</dd><dt>Concluída em</dt><dd>${fmtDate(r.acaoConcluidaEm)}</dd>${r.atualizaPop?`<dt>Documentação</dt><dd>Exigiu atualizar POP ou checklist</dd>`:""}</dl>`:(sB==="locked"?"":`
+    <div class="fields">
+      <div class="field full"><label for="c-acao">Ação</label><textarea id="c-acao" ${dis} placeholder="Ex.: incluir no checklist fiscal a conferência de vencimentos com feriados, revisada pelo líder do setor.">${esc(r.acao||"")}</textarea></div>
+      <div class="field"><label for="c-resp">Responsável</label><input id="c-resp" value="${esc(r.responsavel||"")}" ${dis} placeholder="Nome de quem executa"></div>
+      <div class="field"><label for="c-prazo">Prazo</label><input id="c-prazo" type="date" value="${esc(r.prazo||"")}" ${dis}></div>
+      <div class="field full"><label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="c-pop" ${r.atualizaPop?"checked":""} ${dis} style="width:auto"> A ação exige atualizar um POP, checklist ou modelo</label></div>
+      <div class="field"><label for="c-verif">Verificar a eficácia em</label><input id="c-verif" type="date" value="${esc(r.verificarEm||addDays(todayStr(),30))}" ${dis}><small>Entre 30 e 60 dias costuma bastar. Para obrigações mensais, espere ao menos um ciclo.</small></div>
+    </div>
+    <p class="err" id="c-err" hidden></p>
+    <div class="actions"><button class="btn" id="c-save" ${dis}>Salvar rascunho</button><button class="btn primary" id="c-next" ${dis}>Concluir ação</button></div>`)}
+  </section>
+
+  <section class="card stage ${sC}">
+    <h3>Verificação de eficácia</h3>
+    <p class="sub">${sC==="locked"?"Liberada depois que a ação corretiva for concluída.":(sC==="done"?"Encerrada em "+fmtDate(r.encerradaEm)+".":(r.verificarEm&&r.verificarEm>todayStr()?"Prevista para "+fmtDate(r.verificarEm)+". Você pode verificar antes, se já houver evidência.":"Confira se o problema voltou a acontecer desde a ação."))}</p>
+    ${sC==="done"?`<dl class="ro"><dt>Resultado</dt><dd>Eficaz, o problema não voltou</dd><dt>O que mudou no processo</dt><dd>${esc(r.licao||"—")}</dd></dl>`:(sC==="locked"?"":`
+    <div class="fields">
+      <div class="field full"><span class="lab" id="v-lab">Resultado</span><div class="result" role="radiogroup" aria-labelledby="v-lab">
+        <label><input type="radio" name="vres" value="eficaz" ${dis}> Eficaz, o problema não voltou</label>
+        <label><input type="radio" name="vres" value="ineficaz" ${dis}> Ineficaz, o problema voltou</label></div></div>
+      <div class="field full"><label for="v-lic">Evidência e aprendizado</label><textarea id="v-lic" ${dis} placeholder="Ex.: três fechamentos sem atraso; checklist v2 publicado na pasta de procedimentos.">${esc(r.licao||"")}</textarea></div>
+    </div>
+    <p class="err" id="v-err" hidden></p>
+    <div class="actions"><button class="btn primary" id="v-next" ${dis}>Registrar verificação</button></div>`)}
+  </section>
+
+  ${(r.historico||[]).length?`<section class="card"><h3>Histórico</h3><ul class="hist" style="margin-top:10px">${r.historico.slice().reverse().map(h=>`<li><b>${esc(h.texto)}</b>, ${fmtDate(h.em)}, por ${esc(nameOf(h.por))}</li>`).join("")}</ul></section>`:""}`;
+}
+
+/* ---------- Ações ---------- */
+function go(view,extra){S.view=view;if(extra)Object.assign(S,extra);render();window.scrollTo(0,0);$("#main").focus({preventScroll:true})}
+function hist(r,texto){return (r.historico||[]).concat([{texto,em:new Date().toISOString(),por:S.uid||null}])}
+function showErr(id,msg){const e=$(id);if(!e)return;e.textContent=msg;e.hidden=!msg}
+
+function bindView(){
+  const m=$("#main");
+  m.querySelectorAll("[data-go]").forEach(b=>b.onclick=e=>{e.preventDefault();go(b.dataset.go)});
+  m.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>go("detalhe",{sel:b.dataset.open}));
+  m.querySelectorAll("[data-etapa]").forEach(b=>b.onclick=()=>{S.filters.etapa=b.dataset.etapa;go("lista")});
+
+  if(S.view==="lista"){
+    const fq=$("#fq");fq.oninput=()=>{S.filters.q=fq.value;clearTimeout(bindView._t);bindView._t=setTimeout(()=>{const pos=fq.selectionStart;render();const n=$("#fq");n.focus();n.setSelectionRange(pos,pos)},250)};
+    $("#fe").onchange=e=>{S.filters.etapa=e.target.value;render()};
+    $("#fs").onchange=e=>{S.filters.setor=e.target.value;render()};
+    $("#fv").onchange=e=>{S.filters.sev=e.target.value;render()};
+    const csv=$("#csv");if(csv)csv.onclick=exportCsv;
+  }
+
+  if(S.view==="nova"){
+    $("#fnova").onsubmit=async e=>{
+      e.preventDefault();
+      const v=id=>$(id).value.trim();
+      const sev=(m.querySelector('input[name="sev"]:checked')||{}).value;
+      if(!v("#n-setor")||!v("#n-cat")||!v("#n-origem")||!sev||!v("#n-desc")){showErr("#n-err","Preencha setor, tipo de problema, origem, severidade e o que aconteceu.");return}
+      const now=new Date().toISOString();
+      const rec={id:"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),codigo:newCode(),criadaEm:now,atualizadoEm:now,autorId:S.uid||null,
+        setor:v("#n-setor"),dataOcorrencia:v("#n-data")||todayStr(),cliente:v("#n-cliente"),categoria:v("#n-cat"),origem:v("#n-origem"),severidade:sev,
+        descricao:v("#n-desc"),correcao:v("#n-corr"),custo:Number(v("#n-custo"))||0,horas:Number(v("#n-horas"))||0,status:"analise",reaberturas:0,historico:[]};
+      rec.historico=hist(rec,"RNC registrada");
+      const btn=e.submitter;if(btn)btn.disabled=true;
+      if(await persist(rec)){toast("RNC registrada");go("detalhe",{sel:rec.id})}else if(btn)btn.disabled=false;
+    };
+  }
+
+  if(S.view==="detalhe"){
+    const r=S.rncs.find(x=>x.id===S.sel);if(!r)return;
+    const upd=async(changes,msg,label)=>{const rec=Object.assign({},r,changes,{atualizadoEm:new Date().toISOString()});if(label)rec.historico=hist(r,label);if(await persist(rec))toast(msg)};
+    const bimp=$("#b-imp");if(bimp)bimp.onclick=()=>upd({custo:Number($("#d-custo").value)||0,horas:Number($("#d-horas").value)||0},"Impacto atualizado");
+
+    const met=$("#a-met");
+    if(met){
+      met.onchange=()=>{$("#a-5").hidden=met.value==="ishikawa";$("#a-ish").hidden=met.value!=="ishikawa"};
+      const collect=()=>{const porques=[...m.querySelectorAll("[data-why]")].map(i=>i.value.trim());const ishikawa={};m.querySelectorAll("[data-ish]").forEach(t=>{if(t.value.trim())ishikawa[t.dataset.ish]=t.value.trim()});return {metodo:met.value,porques,ishikawa,causaRaiz:$("#a-causa").value.trim()}};
+      const s=$("#a-save");if(s)s.onclick=()=>upd(collect(),"Rascunho salvo");
+      const n=$("#a-next");if(n)n.onclick=()=>{const c=collect();if(!c.causaRaiz){showErr("#a-err","Escreva a causa raiz antes de concluir a análise.");return}upd(Object.assign(c,{status:"acao",analiseConcluidaEm:new Date().toISOString()}),"Análise concluída","Análise de causa concluída")};
+    }
+    const cn=$("#c-next");
+    if(cn){
+      const collect=()=>({acao:$("#c-acao").value.trim(),responsavel:$("#c-resp").value.trim(),prazo:$("#c-prazo").value,atualizaPop:$("#c-pop").checked,verificarEm:$("#c-verif").value});
+      $("#c-save").onclick=()=>upd(collect(),"Rascunho salvo");
+      cn.onclick=()=>{const c=collect();if(!c.acao||!c.responsavel){showErr("#c-err","Descreva a ação e informe o responsável antes de concluir.");return}if(!c.verificarEm)c.verificarEm=addDays(todayStr(),30);upd(Object.assign(c,{status:"verificacao",acaoConcluidaEm:new Date().toISOString()}),"Ação concluída","Ação corretiva concluída")};
+    }
+    const vn=$("#v-next");
+    if(vn)vn.onclick=()=>{
+      const res=(m.querySelector('input[name="vres"]:checked')||{}).value;const lic=$("#v-lic").value.trim();
+      if(!res){showErr("#v-err","Escolha se a ação foi eficaz ou não.");return}
+      if(res==="eficaz")upd({status:"encerrada",licao:lic,encerradaEm:new Date().toISOString()},"RNC encerrada","Verificada como eficaz e encerrada");
+      else upd({status:"analise",licao:lic,reaberturas:(r.reaberturas||0)+1,causaRaiz:"",acaoAnterior:r.acao,acao:"",acaoConcluidaEm:null,analiseConcluidaEm:null},"RNC voltou para a análise","Verificada como ineficaz, voltou para a análise de causa");
+    };
+  }
+}
+
+async function exportCsv(){
+  if(!S.downloads)return;
+  const cols=[["codigo","Código"],["criadaEm","Registrada em"],["dataOcorrencia","Data da ocorrência"],["setor","Setor"],["cliente","Cliente"],["categoria","Tipo de problema"],["origem","Origem"],["severidade","Severidade"],["status","Etapa"],["descricao","O que aconteceu"],["correcao","Correção imediata"],["causaRaiz","Causa raiz"],["acao","Ação corretiva"],["responsavel","Responsável"],["prazo","Prazo"],["verificarEm","Verificar em"],["encerradaEm","Encerrada em"],["custo","Multas e juros (R$)"],["horas","Horas de retrabalho"],["reaberturas","Reaberturas"],["licao","Aprendizado"]];
+  const cell=v=>{let s=v==null?"":String(v);if(s&&/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'};
+  const map=r=>cols.map(([k])=>{let v=r[k];if(k==="severidade")v=SEV[v]?SEV[v].label:v;if(k==="status")v=ETAPAS[v]?ETAPAS[v].short:v;if(k==="criadaEm"||k==="encerradaEm")v=fmtDate(v);if((k==="custo")&&v)v=String(v).replace(".",",");return cell(v)}).join(";");
+  const data="\uFEFF"+cols.map(c=>cell(c[1])).join(";")+"\n"+filtered().map(map).join("\n");
+  try{await S.downloads.save({filename:"rnc-conflex-"+todayStr()+".csv",data})}catch(e){if(e&&e.code==="unavailable"){S.downloads=null;render()}}
+}
+
+document.querySelectorAll("nav [data-view]").forEach(b=>b.onclick=()=>go(b.dataset.view));
+init();
+})();
+</script>
+</body>
+</html>

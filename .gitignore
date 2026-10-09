@@ -1,0 +1,24 @@
+node_modules/
+.next/
+out/
+coverage/
+src/generated/
+
+# Variáveis de ambiente: nunca versionar
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+.vercel
+
+# Next.js
+next-env.d.ts
+*.tsbuildinfo
+
+# E-mails gravados no modo de teste local
+.emails/
+
+# Dados do PostgreSQL local de desenvolvimento
+.dados/
