@@ -18,11 +18,12 @@ export async function buscarTokenValido(token: string) {
 export async function criarLinkSenha(
   usuarioId: string,
   tipo: "convite" | "redefinicao",
-  criadoPorId: string,
+  criadoPorId: string | null,
+  horas: number = VALIDADE_HORAS[tipo],
 ): Promise<{ token: string; expiraEm: Date }> {
   const { token, tokenHash } = gerarToken();
   const agora = new Date();
-  const expiraEm = new Date(agora.getTime() + VALIDADE_HORAS[tipo] * 3_600_000);
+  const expiraEm = new Date(agora.getTime() + horas * 3_600_000);
   await prisma.$transaction([
     prisma.tokenSenha.updateMany({ where: { usuarioId, usadoEm: null }, data: { usadoEm: agora } }),
     prisma.tokenSenha.create({ data: { tokenHash, tipo, usuarioId, criadoPorId, expiraEm } }),

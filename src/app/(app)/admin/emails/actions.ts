@@ -32,7 +32,8 @@ export async function enviarTeste(): Promise<EstadoNotificacoes> {
 export async function reenviarFalhas(): Promise<EstadoNotificacoes> {
   await exigirGestao();
   // Volta as falhas para a fila, zerando a contagem de tentativas
-  await prisma.notificacao.updateMany({ where: { status: "falhou" }, data: { status: "pendente", tentativas: 0, proximaTentativaEm: new Date() } });
+  // O pedido de nova senha não volta para a fila: o e-mail guardado está sem o link (a pessoa pede de novo)
+  await prisma.notificacao.updateMany({ where: { status: "falhou", tipo: { not: "redefinicao_senha" } }, data: { status: "pendente", tentativas: 0, proximaTentativaEm: new Date() } });
   const r = await processarFila({ limite: 100 });
   revalidatePath("/admin/emails");
   return descrever(r);

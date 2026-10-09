@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { obterUsuarioAtual } from "@/lib/auth/sessao";
 import { TelaEntrada } from "@/components/TelaEntrada";
@@ -13,7 +14,10 @@ export default async function PaginaLogin() {
       <h2>Entrar</h2>
       <p className="sub">Use o seu e-mail da Conflex e a senha que você criou.</p>
       <FormLogin />
-      <p className="ajuda">Esqueceu a senha ou ainda não tem acesso? Peça um link à gestão da qualidade.</p>
+      <p className="ajuda centro">
+        <Link href="/esqueci-senha">Esqueci minha senha</Link>
+      </p>
+      <p className="ajuda">Ainda não tem acesso? Peça à gestão da qualidade.</p>
     </TelaEntrada>
   );
 }

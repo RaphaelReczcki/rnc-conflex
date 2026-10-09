@@ -422,6 +422,7 @@ enum TipoNotificacao {
   lembrete_prazo_dia
   verificacao_liberada
   resumo_semanal
+  redefinicao_senha
   teste
 
   @@map("tipo_notificacao")

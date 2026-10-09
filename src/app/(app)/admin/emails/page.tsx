@@ -14,6 +14,7 @@ const TIPOS: Record<string, string> = {
   lembrete_prazo_dia: "Prazo hoje",
   verificacao_liberada: "Verificação liberada",
   resumo_semanal: "Resumo semanal",
+  redefinicao_senha: "Esqueci a senha",
   teste: "Teste",
 };
 

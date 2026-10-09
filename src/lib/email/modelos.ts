@@ -142,3 +142,16 @@ export function emailTeste(p: { para: string; link: string }): Email {
     textoLink: "Abrir o sistema",
   });
 }
+
+export function emailRedefinicaoSenha(p: { para: string; link: string }): Email {
+  return montar({
+    assunto: "Link para criar uma nova senha",
+    titulo: "Criar uma nova senha",
+    paragrafos: [
+      `Olá, ${primeiroNome(p.para)}. Recebemos um pedido para criar uma nova senha no sistema de não conformidades.`,
+      "O link abaixo vale por 1 hora e só pode ser usado uma vez. Se você não pediu, ignore este e-mail: a sua senha atual continua valendo.",
+    ],
+    link: p.link,
+    textoLink: "Criar nova senha",
+  });
+}
