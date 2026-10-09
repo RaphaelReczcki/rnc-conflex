@@ -1,0 +1,5 @@
+# Quebras de linha no padrão Linux em todo o repositório (o servidor é Linux,
+# e as migrations têm a assinatura conferida pelo Prisma).
+* text=auto eol=lf
+*.png binary
+*.xlsx binary
