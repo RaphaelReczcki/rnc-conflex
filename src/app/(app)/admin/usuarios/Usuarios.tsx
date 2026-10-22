@@ -247,7 +247,7 @@ function ModalUsuario({
         </div>
         <div className={`field ${marca("email")}`}>
           <label htmlFor="u-email">E-mail (login)</label>
-          <input id="u-email" name="email" type="email" defaultValue={u?.email} placeholder="nome@conflex.com.br" required />
+          <input id="u-email" name="email" type="email" defaultValue={u?.email} placeholder="nome@exemplo.com.br" required />
         </div>
         <div className="fields">
           <div className={`field ${marca("perfil")}`}>

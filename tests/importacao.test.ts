@@ -10,7 +10,6 @@ const ctxBase = {
   existentes: new Map(),
   atualizarExistentes: false,
   meuEmail: "qualidade@conflex.com.br",
-  dominios: "conflex.com.br",
 };
 const CAB = ["Nome", "E-mail", "Perfil", "Setor"];
 const analisar = (linhas: string[][], ctx = {}) => analisarUsuarios([CAB, ...linhas], { ...ctxBase, ...ctx });
@@ -76,7 +75,6 @@ describe("análise das linhas", () => {
     const ls = analisar([
       ["Ana", "ana@conflex.com.br", "Diretor", ""],
       ["Bia", "bia@conflex.com.br", "Colaborador", "Jurídico"],
-      ["Caio", "caio@gmail.com", "", ""],
       ["Duda", "duda@", "", ""],
       ["E", "e@conflex.com.br", "", ""],
       ["Fabi", "fabi@conflex.com.br", "Líder de setor", ""],
@@ -85,7 +83,6 @@ describe("análise das linhas", () => {
     expect(ls.map((l) => l.mensagens[0])).toEqual([
       expect.stringMatching(/Perfil "Diretor" não existe/),
       expect.stringMatching(/Setor "Jurídico" não existe/),
-      "Use o e-mail corporativo da Conflex.",
       "E-mail inválido.",
       "Informe o nome.",
       "Líder de setor precisa de um setor.",
@@ -100,8 +97,12 @@ describe("análise das linhas", () => {
     expect(ls[1].mensagens[0]).toMatch(/linha 2/);
   });
   it("linha com erro mostra só os erros, sem os avisos", () => {
+    const [l] = analisar([["Fora", "fora@", "", ""]]).linhas;
+    expect(l.mensagens).toEqual(["E-mail inválido."]);
+  });
+  it("aceita e-mail de qualquer domínio", () => {
     const [l] = analisar([["Fora", "fora@gmail.com", "", ""]]).linhas;
-    expect(l.mensagens).toEqual(["Use o e-mail corporativo da Conflex."]);
+    expect(l.acao).toBe("criar");
   });
   it("pula linhas em branco e mantém o número da linha da planilha", () => {
     const ls = analisar([["", "", "", ""], ["Ana", "ana@conflex.com.br", "", ""]]).linhas;

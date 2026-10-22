@@ -10,16 +10,6 @@ export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export function emailPermitido(email: string, dominios = process.env.EMAIL_DOMINIOS_PERMITIDOS): boolean {
-  const lista = (dominios ?? "")
-    .split(",")
-    .map((d) => d.trim().toLowerCase())
-    .filter(Boolean);
-  if (!lista.length) return true;
-  const dominio = email.toLowerCase().split("@")[1] ?? "";
-  return lista.includes(dominio);
-}
-
 export const BLOQUEIO_TENTATIVAS = 5;
 export const BLOQUEIO_MINUTOS = 15;
 

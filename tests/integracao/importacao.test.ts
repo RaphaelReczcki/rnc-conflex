@@ -23,7 +23,7 @@ describe("importar usuários", () => {
       ["Nome", "E-mail", "Perfil", "Setor"],
       ["Ana Import", email("ana"), "Líder de setor", setorNome],
       ["Bruno Import", email("bruno"), "", ""],
-      ["Errado", "errado@gmail.com", "", ""],
+      ["Errado", "errado@", "", ""],
     ];
     const previa = await analisarPlanilhaUsuarios(planilha, GESTOR, false);
     expect(previa.linhas.map((l) => l.acao)).toEqual(["criar", "criar", "erro"]);
@@ -37,7 +37,7 @@ describe("importar usuários", () => {
     expect(ana).toMatchObject({ perfil: "lider_setor", deveTrocarSenha: true, ativo: true });
     expect(ana.setor?.nome).toBe(setorNome);
     expect(await verify(ana.senhaHash!, r.credenciais[0].senha)).toBe(true);
-    expect(await prisma.usuario.count({ where: { email: "errado@gmail.com" } })).toBe(0);
+    expect(await prisma.usuario.count({ where: { email: "errado@" } })).toBe(0);
   });
 
   it("importar de novo não duplica; com a opção marcada, atualiza perfil e setor sem mexer na senha", async () => {

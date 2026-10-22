@@ -1,7 +1,6 @@
 // Análise da planilha de usuários, sem banco: o que cada linha vai virar.
 import { z } from "zod";
 import { normalizar } from "@/lib/normalizar";
-import { emailPermitido } from "@/lib/auth/tokens";
 import type { Perfil } from "@/lib/auth/permissoes";
 
 export const COLUNAS = ["Nome", "E-mail", "Perfil", "Setor"] as const;
@@ -37,7 +36,6 @@ type Contexto = {
   existentes: Map<string, { id: string; nome: string; perfil: Perfil; setorId: string | null; ativo: boolean }>;
   atualizarExistentes: boolean;
   meuEmail: string;
-  dominios?: string;
 };
 
 const chave = (t: string) => normalizar(t).replace(/[\s_-]+/g, " ");
@@ -75,7 +73,6 @@ export function analisarUsuarios(linhas: string[][], ctx: Contexto): { erroGeral
     else if (nome.length > 120) erros.push("Nome muito longo.");
     if (!email) erros.push("Informe o e-mail.");
     else if (!z.email().safeParse(email).success) erros.push("E-mail inválido.");
-    else if (!emailPermitido(email, ctx.dominios)) erros.push("Use o e-mail corporativo da Conflex.");
 
     let perfil: Perfil | null = "colaborador";
     if (perfilTexto) {
