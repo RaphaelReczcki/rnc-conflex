@@ -94,7 +94,7 @@ export async function gerarModeloUsuarios(): Promise<Buffer> {
     "Como preencher",
     "",
     "• Uma pessoa por linha, na aba Usuários. Não mude o cabeçalho.",
-    "• Nome e E-mail são obrigatórios. Use o e-mail corporativo (@conflex.com.br): ele é o login.",
+    "• Nome e E-mail são obrigatórios. O e-mail é o login de cada pessoa.",
     `• Perfil: ${Object.values(PERFIS_PLANILHA).join(", ")}. Em branco = Colaborador.`,
     `• Setor: ${setores.map((s) => s.nome).join(", ")}. Obrigatório para Líder de setor.`,
     "• Não coloque CPF nem outros dados pessoais.",

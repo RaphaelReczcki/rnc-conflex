@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validarSenha, SENHA_MIN } from "@/lib/auth/senha-regras";
 import { gerarHashSenha, verificarSenha } from "@/lib/auth/senha";
-import { BLOQUEIO_MINUTOS, BLOQUEIO_TENTATIVAS, emailPermitido, gerarToken, hashToken, registrarFalha } from "@/lib/auth/tokens";
+import { BLOQUEIO_MINUTOS, BLOQUEIO_TENTATIVAS, gerarToken, hashToken, registrarFalha } from "@/lib/auth/tokens";
 import { normalizar } from "@/lib/normalizar";
 
 describe("validarSenha", () => {
@@ -38,17 +38,6 @@ describe("tokens", () => {
   });
 });
 
-describe("e-mail corporativo", () => {
-  it("aceita só os domínios configurados", () => {
-    expect(emailPermitido("ana@conflex.com.br", "conflex.com.br")).toBe(true);
-    expect(emailPermitido("ANA@Conflex.com.br", "conflex.com.br")).toBe(true);
-    expect(emailPermitido("ana@gmail.com", "conflex.com.br")).toBe(false);
-    expect(emailPermitido("ana@conflex.com.br.evil.com", "conflex.com.br")).toBe(false);
-  });
-  it("sem configuração, aceita qualquer domínio", () => {
-    expect(emailPermitido("ana@gmail.com", "")).toBe(true);
-  });
-});
 
 describe("bloqueio por tentativas", () => {
   const agora = new Date("2026-10-08T12:00:00Z");

@@ -6,7 +6,6 @@ import { prisma } from "@/lib/db";
 import { encerrarSessoesDoUsuario, exigirGestao } from "@/lib/auth/sessao";
 import { gerarHashSenha } from "@/lib/auth/senha";
 import { gerarSenhaProvisoria } from "@/lib/auth/senha-provisoria";
-import { emailPermitido } from "@/lib/auth/tokens";
 import { ErroPlanilha, lerPlanilha } from "@/lib/importacao/planilha";
 import type { LinhaAnalisada } from "@/lib/importacao/usuarios";
 import { analisarPlanilhaUsuarios, importarUsuarios, resumir, type ResumoImportacao } from "@/lib/importacao/importar-usuarios";
@@ -31,8 +30,7 @@ const esquema = z
       .transform((v) => v || null)
       .pipe(z.uuid({ message: "Escolha a equipe na lista." }).nullable()),
   })
-  .refine((d) => d.perfil !== "lider_setor" || d.setorId, { message: "Líder de setor precisa de um setor.", path: ["setorId"] })
-  .refine((d) => emailPermitido(d.email), { message: "Use o e-mail corporativo da Conflex.", path: ["email"] });
+  .refine((d) => d.perfil !== "lider_setor" || d.setorId, { message: "Líder de setor precisa de um setor.", path: ["setorId"] });
 
 function lerForm(form: FormData) {
   return esquema.safeParse({

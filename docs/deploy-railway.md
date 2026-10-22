@@ -37,7 +37,6 @@ Em **Variables**, adicione:
 | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (referência ao banco do projeto) |
 | `DIRECT_URL` | `${{Postgres.DATABASE_URL}}` |
 | `APP_URL` | `https://rnc.conflex.com.br` |
-| `EMAIL_DOMINIOS_PERMITIDOS` | `conflex.com.br` |
 | `SESSAO_HORAS` | `12` |
 | `EMAIL_MODO` | `desligado` até o Microsoft 365 ser configurado; depois `graph` |
 | `EMAIL_REMETENTE` | `rnc@conflex.com.br` |

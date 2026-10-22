@@ -10,7 +10,7 @@ Existe um protótipo funcional em `rnc-conflex.html` (HTML único, sem backend).
 
 - Next.js (App Router) + TypeScript
 - PostgreSQL (Supabase ou Postgres próprio) com Prisma ou Drizzle
-- Autenticação por e-mail corporativo (@conflex.com.br)
+- Autenticação por e-mail e senha (o e-mail é o login; aceita qualquer domínio, definido em 22/10/2026)
 - Envio de e-mail para lembretes de prazo
 - Deploy no Railway (aplicação + PostgreSQL), código em GitHub privado (definido em 09/10/2026; veja docs/deploy-railway.md)
 
