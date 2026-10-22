@@ -12,7 +12,7 @@ export default async function PaginaLogin() {
   return (
     <TelaEntrada>
       <h2>Entrar</h2>
-      <p className="sub">Use o seu e-mail da Conflex e a senha que você criou.</p>
+      <p className="sub">Use o seu e-mail cadastrado no sistema e a sua senha.</p>
       <FormLogin />
       <p className="ajuda centro">
         <Link href="/esqueci-senha">Esqueci minha senha</Link>
